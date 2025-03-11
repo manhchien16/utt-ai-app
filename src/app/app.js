@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const { initializeSearch } = require("./services/singleton/initializeSearch");
 const chatbotRouter = require("../router/chatbot");
 const feedbackRouter = require("../router/feedback");
+const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -17,15 +18,18 @@ app.use(
     cookie: { secure: false },
   })
 );
-app.listen(PORT, () => {
-  console.log(`Server đang chạy tại http://localhost:${PORT}`);
-});
+//cofig cors
+app.use(cors());
 
+//cofig start server
 const startServer = async () => {
   try {
     await initializeSearch();
+    app.listen(PORT, () => {
+      console.log(`Server is running in http://localhost:${PORT}`);
+    });
   } catch (error) {
-    console.error("Lỗi khi khởi động server:", error);
+    console.error("Error running server:", error);
   }
 };
 startServer();

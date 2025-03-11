@@ -72,7 +72,7 @@ const generateGpt4Response = async (userQuery) => {
     console.log(prompt);
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
@@ -80,11 +80,23 @@ const generateGpt4Response = async (userQuery) => {
         },
         { role: "user", content: prompt },
       ],
-      stream: true,
       max_tokens: 3500,
     });
 
     return response.choices[0].message.content;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+// save FAQ data
+const saveFAQData = async (data) => {
+  try {
+    if (!areObjectValid(["Question", "Answer"], data)) {
+      throw new Error("Data is invalid");
+    }
+    const createFAQ = await faqCollection.insertOne(data);
+    return createFAQ;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -96,7 +108,7 @@ const saveChatLog = async (data) => {
     if (!areObjectValid(["user_ip", "user_message", "bot_response"], data)) {
       throw new Error("Data is invalid");
     }
-    return await chatlogCollection.insertOne({
+    const createChatlog = await chatlogCollection.insertOne({
       user_ip: data.user_ip,
       timestamp: new Date(),
       user_message: data.user_message,
@@ -104,6 +116,7 @@ const saveChatLog = async (data) => {
       is_good: !data.feedback,
       problem_detail: data.feedback || "",
     });
+    return createChatlog;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -112,8 +125,6 @@ const saveChatLog = async (data) => {
 // save feedback
 const saveFeedback = async (data) => {
   try {
-    console.log(data);
-
     if (!areObjectValid(["id", "feedback"], data)) {
       throw new Error("Data is invalid");
     }
@@ -121,7 +132,7 @@ const saveFeedback = async (data) => {
     if (!findFeedback) {
       throw new Error("data not found");
     }
-    const dataRes = await chatlogCollection.findByIdAndUpdate(
+    const updateChatlog = await chatlogCollection.findByIdAndUpdate(
       findFeedback._id,
       {
         is_good: false,
@@ -129,9 +140,8 @@ const saveFeedback = async (data) => {
       },
       { new: true }
     );
-    console.log(dataRes);
 
-    return dataRes;
+    return updateChatlog;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -146,6 +156,15 @@ const getAllChatLogs = async () => {
   }
 };
 
+// Get all FAQ
+const getAllFAQ = async () => {
+  try {
+    return await faqCollection.find({}, "-__v").lean();
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 // Handle user query
 const handleUserQuery = async (userQuery, userIP) => {
   try {
@@ -155,7 +174,7 @@ const handleUserQuery = async (userQuery, userIP) => {
     console.log("match:", match);
     console.log("score:", score);
 
-    if (score < 0.7) {
+    if (score < 0.8) {
       response = await generateGpt4Response(userQuery);
       const newData = {
         user_ip: userIP,
@@ -164,6 +183,7 @@ const handleUserQuery = async (userQuery, userIP) => {
         bot_response: response,
       };
       await saveChatLog(newData);
+      await saveFAQData((data = { Question: userQuery, Answer: response }));
     } else {
       response = await faqCollection.findOne(
         {
@@ -180,4 +200,4 @@ const handleUserQuery = async (userQuery, userIP) => {
   }
 };
 
-module.exports = { handleUserQuery, saveFeedback, getAllChatLogs };
+module.exports = { handleUserQuery, saveFeedback, getAllChatLogs, getAllFAQ };

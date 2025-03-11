@@ -32,8 +32,18 @@ const getAllChatLogs = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const getAllFAQ = async (req, res) => {
+  try {
+    const faqs = await chatbotSevice.getAllFAQ();
+    res.status(200).json(faqs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 module.exports = {
   handleUserQuery,
   getAllChatLogs,
   saveFeedback,
+  getAllFAQ,
 };
