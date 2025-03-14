@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
-mongoose.connect("mongodb://127.0.0.1:27017/utt-app", {
+// mongoose.connect("mongodb://127.0.0.1:27017/utt-app", {
+//   serverSelectionTimeoutMS: 5000,
+// });
+mongoose.connect(process.env.MONGO_URI, {
   serverSelectionTimeoutMS: 5000,
 });
 

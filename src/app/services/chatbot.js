@@ -5,47 +5,48 @@ const { OpenAI } = require("openai");
 const mammoth = require("mammoth");
 const fs = require("fs-extra");
 require("dotenv").config();
-const tf = require("@tensorflow/tfjs-node");
-const cosineSimilarity = require("compute-cosine-similarity");
+require("@tensorflow/tfjs-node");
+
 const { getSearchData } = require("./singleton/initializeSearch");
-const e = require("express");
+const cosineSimilarity = require("compute-cosine-similarity");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // findBestMatch in FAQ
 const findBestMatch = async (userQuery) => {
   try {
-    const { encoder, faqEmbeddings } = getSearchData();
+    if (!userQuery) throw new Error("Data is invalid");
+    const { encoder, faissIndex, faqEmbeddings } = getSearchData();
 
     const faqData = await faqCollection.find({}, "-_id Question").lean();
 
     const queryEmbedding = await encoder.embed([userQuery]);
     const queryArray = queryEmbedding.arraySync().flat();
 
-    let bestMatchIndex = -1;
-    let maxSimilarity = -1; // Cosine similarity value -1 to 1
+    const { labels } = faissIndex.search(queryArray, 3);
 
-    const allEmbeddings = faqEmbeddings.arraySync();
-    for (let i = 0; i < allEmbeddings.length; i++) {
-      const similarity = cosineSimilarity(queryArray, allEmbeddings[i]);
-      if (similarity > maxSimilarity) {
-        maxSimilarity = similarity;
-        bestMatchIndex = i;
-      }
-    }
+    const bestMatchIndex = labels[0];
 
-    return {
-      match: faqData[bestMatchIndex] || "Không tìm thấy",
-      score: maxSimilarity,
-    };
+    const faqEmbeddingsArray = faqEmbeddings.arraySync();
+    const bestMatchEmbedding = faqEmbeddingsArray[bestMatchIndex];
+
+    const topMatch = labels.map((item, index) => ({
+      match: faqData[item].Question,
+      score: cosineSimilarity(queryArray, faqEmbeddingsArray[item]),
+    }));
+
+    return topMatch;
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-// Euclidean
-const euclideanDistance = (a, b) => {
-  return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
+// Hàm tính khoảng cách Euclidean
+const euclideanDistance = (vecA, vecB) => {
+  if (vecA.length !== vecB.length) return Infinity;
+  return Math.sqrt(
+    vecA.reduce((sum, val, i) => sum + Math.pow(val - vecB[i], 2), 0)
+  );
 };
 
 // Search in document
@@ -63,13 +64,11 @@ const searchInDocument = async (query, docPath) => {
 };
 
 // Search in GPT-4
-const generateGpt4Response = async (userQuery) => {
-  if (typeof userQuery !== "string") {
-    throw new Error("🚨 userQuery phải là một chuỗi!");
-  }
+const generateGpt4Response = async (userQuery, userIP) => {
   try {
+    if (typeof userQuery !== "string" || !userQuery)
+      throw new Error("Data is invalid");
     const prompt = `Một sinh viên hỏi: ${userQuery}\n\nDựa trên thông tin tìm được trên internet, hãy cung cấp một câu trả lời hữu ích, ngắn gọn và thân thiện. Dẫn nguồn nếu có thể.`;
-    console.log(prompt);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4",
@@ -83,7 +82,15 @@ const generateGpt4Response = async (userQuery) => {
       max_tokens: 3500,
     });
 
-    return response.choices[0].message.content;
+    const newData = {
+      user_ip: userIP,
+      timestamp: new Date(),
+      user_message: userQuery,
+      bot_response: response.choices[0].message.content,
+    };
+    const responseGPT = await saveChatLog(newData);
+
+    return responseGPT;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -165,39 +172,68 @@ const getAllFAQ = async () => {
   }
 };
 
+// delete FAQ
+const deleteFaqById = async (id) => {
+  try {
+    if (id) {
+      await faqCollection.findByIdAndDelete(id);
+      return "Delete Success!";
+    }
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+// delete ChatLog
+const deleteChatLogById = async (id) => {
+  try {
+    if (id) {
+      await chatlogCollection.findByIdAndDelete(id);
+      return "Delete Success!";
+    }
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 // Handle user query
 const handleUserQuery = async (userQuery, userIP) => {
   try {
-    const { match, score } = await findBestMatch(userQuery);
+    if (!userQuery) throw new Error("Data is invalid");
+    const topMatch = await findBestMatch(userQuery);
     let response;
+    const bestMatch = topMatch.reduce(
+      (max, item) => (item.score > max.score ? item : max),
+      { match: "", score: -Infinity }
+    );
 
-    console.log("match:", match);
-    console.log("score:", score);
+    if (bestMatch.score < 0.86) {
+      response = topMatch;
+    } else {
+      const responseFaq = await faqCollection.findOne({
+        Question: bestMatch.match,
+      });
 
-    if (score < 0.8) {
-      response = await generateGpt4Response(userQuery);
       const newData = {
         user_ip: userIP,
         timestamp: new Date(),
         user_message: userQuery,
-        bot_response: response,
+        bot_response: responseFaq.Answer,
       };
-      await saveChatLog(newData);
-      await saveFAQData((data = { Question: userQuery, Answer: response }));
-    } else {
-      response = await faqCollection.findOne(
-        {
-          Question: match.Question,
-        },
-        "-__v"
-      );
+      response = await saveChatLog(newData);
     }
-
-    console.log("respornse:", response);
     return response;
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-module.exports = { handleUserQuery, saveFeedback, getAllChatLogs, getAllFAQ };
+module.exports = {
+  handleUserQuery,
+  generateGpt4Response,
+  saveFeedback,
+  getAllChatLogs,
+  getAllFAQ,
+  deleteFaqById,
+  deleteChatLogById,
+};

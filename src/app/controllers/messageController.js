@@ -11,6 +11,17 @@ const handleUserQuery = async (req, res) => {
   }
 };
 
+const generateGpt4Response = async (req, res) => {
+  try {
+    const userQuery = req.body.userQuery;
+    const userIP = req.ip;
+    const resData = await chatbotSevice.generateGpt4Response(userQuery, userIP);
+    res.status(200).json(resData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const saveFeedback = async (req, res) => {
   try {
     const data = {
@@ -43,6 +54,7 @@ const getAllFAQ = async (req, res) => {
 };
 module.exports = {
   handleUserQuery,
+  generateGpt4Response,
   getAllChatLogs,
   saveFeedback,
   getAllFAQ,

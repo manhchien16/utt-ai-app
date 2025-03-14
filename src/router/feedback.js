@@ -6,7 +6,6 @@ const {
   getAllFAQ,
 } = require("../app/controllers/messageController");
 require("dotenv").config();
-
 router.patch("/chatbot/:id/feedback", saveFeedback);
 router.get("/chatbot/feedback", getAllChatLogs);
 router.get("/chatbot/FAQ", getAllFAQ);

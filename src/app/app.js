@@ -2,8 +2,10 @@ const session = require("express-session");
 const express = require("express");
 const bodyParser = require("body-parser");
 const { initializeSearch } = require("./services/singleton/initializeSearch");
-const chatbotRouter = require("../router/chatbot");
-const feedbackRouter = require("../router/feedback");
+const chatbotRouters = require("../router/chatbot");
+const feedbackRouters = require("../router/feedback");
+const faqRouters = require("../router/faq");
+const chatLogRouters = require("../router/chatLog");
 const cors = require("cors");
 
 const app = express();
@@ -19,7 +21,13 @@ app.use(
   })
 );
 //cofig cors
-app.use(cors());
+const corsOptions = {
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 //cofig start server
 const startServer = async () => {
@@ -34,5 +42,7 @@ const startServer = async () => {
 };
 startServer();
 
-app.use("/api/v1", chatbotRouter);
-app.use("/api/v1", feedbackRouter);
+app.use("/api/v1", chatbotRouters);
+app.use("/api/v1", feedbackRouters);
+app.use("/api/v1", faqRouters);
+app.use("/api/v1", chatLogRouters);

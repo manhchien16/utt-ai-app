@@ -8,36 +8,45 @@ let faissIndex = null;
 let faqEmbeddings = null;
 let initialized = false;
 
-// load model USE and faissIndex
 const initializeSearch = async () => {
   if (initialized) return { encoder, faissIndex, faqEmbeddings };
 
-  try {
-    console.log("🔄 Loading model USE...");
-    encoder = await use.load();
-    console.log("✅ Model USE already!");
+  let attempt = 0;
+  const maxAttempts = 3;
 
-    const faqData = await faqCollection.find({}, "-_id");
-    if (!faqData.length) {
-      console.log("❌ No data FAQ.");
+  while (attempt < maxAttempts) {
+    try {
+      // console.log(`🔄 Attempt ${attempt + 1}: Loading model USE...`);
+      encoder = await use.load();
+      // console.log("✅ Model USE already!");
+
+      const faqData = await faqCollection.find({}, "-_id");
+      if (!faqData.length) {
+        // console.log("❌ No data FAQ.");
+        initialized = true;
+        return null;
+      }
+
+      const faqQuestions = faqData.map((item) => item.Question);
+      faqEmbeddings = await encoder.embed(faqQuestions);
+
+      // console.log(faqEmbeddings.shape);
+      // console.log(faqEmbeddings.arraySync().flat().length);
+
+      faissIndex = new faiss.IndexFlatL2(faqEmbeddings.shape[1]);
+      faissIndex.add(Array.from(faqEmbeddings.arraySync().flat()));
+
       initialized = true;
-      return null;
+      return { encoder, faissIndex, faqEmbeddings };
+    } catch (error) {
+      attempt++;
+      if (attempt >= maxAttempts) {
+        throw new Error(
+          "🚨 Maximum retry attempts reached. Failed to initialize."
+        );
+      }
+      throw new Error(`❌ Error initializeSearch (Attempt ${attempt}):`, error);
     }
-
-    const faqQuestions = faqData.map((item) => item.Question);
-    faqEmbeddings = await encoder.embed(faqQuestions);
-
-    console.log(faqEmbeddings.shape);
-    console.log(faqEmbeddings.arraySync().flat().length);
-
-    faissIndex = new faiss.IndexFlatL2(faqEmbeddings.shape[1]);
-    faissIndex.add(Array.from(faqEmbeddings.arraySync().flat()));
-
-    initialized = true;
-    return { encoder, faissIndex, faqEmbeddings };
-  } catch (error) {
-    console.error("❌ Error initializeSearch:", error);
-    return null;
   }
 };
 
