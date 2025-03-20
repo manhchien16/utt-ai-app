@@ -2,7 +2,6 @@ const { log } = require("@tensorflow/tfjs");
 const faqCollection = require("../../models/faqtuyensinh");
 const faiss = require("faiss-node");
 require("dotenv").config();
-// const cosineSimilarity = require("compute-cosine-similarity");
 
 let encoder = null;
 let faissIndex = null;
@@ -14,7 +13,8 @@ const loadPipeline = async () => {
   const { pipeline } = await import("@xenova/transformers");
   const model = await pipeline(
     "feature-extraction",
-    "Xenova/all-mpnet-base-v2"
+    "Xenova/all-mpnet-base-v2",
+    { local_files_only: true }
   );
   return model;
 };

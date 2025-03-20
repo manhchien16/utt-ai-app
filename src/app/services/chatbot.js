@@ -32,7 +32,7 @@ const findBestMatch = async (userQuery) => {
     );
     const queryArray = Array.from(new Float32Array(queryEmbedding.flat()));
 
-    const { labels, distances } = faissIndex.search(queryArray, 15);
+    const { labels, distances } = faissIndex.search(queryArray, 3);
 
     const faqEmbeddingsArray = faqEmbeddings;
 
@@ -51,7 +51,7 @@ const findBestMatch = async (userQuery) => {
     //   topMatch.slice(0, Math.min(5, topMatch.length))
     // );
 
-    return topMatch.slice(0, Math.min(5, topMatch.length));
+    return topMatch.slice(0, Math.min(3, topMatch.length));
   } catch (error) {
     throw new Error(error.message);
   }
