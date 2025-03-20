@@ -1,7 +1,6 @@
 const {
   areObjectValid,
   cosineSimilarity,
-  generateNewQuery,
 } = require("../../common/functionCommon");
 const faqCollection = require("../models/faqtuyensinh");
 const chatlogCollection = require("../models/chatlog");
@@ -9,7 +8,6 @@ const { OpenAI } = require("openai");
 const mammoth = require("mammoth");
 const fs = require("fs-extra");
 require("dotenv").config();
-require("@tensorflow/tfjs-node");
 
 const { getSearchData } = require("./singleton/initializeSearch");
 
@@ -46,128 +44,11 @@ const findBestMatch = async (userQuery) => {
       }))
       .sort((a, b) => b.score - a.score);
 
-    // console.log(
-    //   "🔹 Top 5 Match:",
-    //   topMatch.slice(0, Math.min(5, topMatch.length))
-    // );
-
-    return topMatch.slice(0, Math.min(5, topMatch.length));
+    return topMatch.slice(0, Math.min(6, topMatch.length));
   } catch (error) {
     throw new Error(error.message);
   }
 };
-// const findBestMatch = async (userQuery) => {
-//   try {
-//     if (!userQuery) throw new Error("Data is invalid");
-
-//     // Lấy danh sách câu hỏi từ MongoDB
-//     const faqData = await faqCollection.find({}, "-_id Question").lean();
-//     const faqQuestions = faqData.map((doc) => doc.Question);
-
-//     // Lấy dữ liệu từ singleton hoặc nơi lưu trữ
-//     const { encoder, faissIndex, faqEmbeddings } = getSearchData();
-//     if (!faqEmbeddings) {
-//       throw new Error("faqEmbeddings không được khởi tạo.");
-//     }
-
-//     const faqItem = "Khi nào có giấy báo trúng tuyển";
-//     const userInput = "Khi nào có giấy báo trúng tuyển";
-
-//     const item1 = await encoder([faqItem]); // Encode riêng
-//     const item2 = await encoder([userInput, faqItem]); // Encode chung
-
-//     console.log("Embedding for faqItem (single):", item1.data);
-
-//     // Lấy embedding của câu thứ hai trong `item2`
-//     const dims = item2.dims[2]; // Kích thước của mỗi embedding vector
-//     const clsVector = item2.data.slice(dims, dims * 2); // Lấy vector [CLS] của câu thứ hai
-
-//     console.log("Embedding for faqItem (from batch):", clsVector);
-
-//     // cosineSimilarity(item1.data, clsVectorAtIndex122);
-
-//     // console.log("query", [userQuery]);
-
-//     const queryEmbeddings = await encoder([userQuery]);
-//     const embeddingsData = queryEmbeddings.data;
-
-//     // Kích thước của embedding
-//     const numSentences = queryEmbeddings.dims[0]; // Số lượng câu truy vấn
-//     const embeddingSize = queryEmbeddings.dims[2]; // Kích thước embedding cho mỗi câu
-
-//     // Mảng chứa tất cả các embedding [CLS] của các câu truy vấn
-//     const processedQueryEmbeddings = new Float32Array(
-//       numSentences * embeddingSize
-//     );
-
-//     for (let i = 0; i < numSentences; i++) {
-//       // Tính toán chỉ mục bắt đầu của embedding [CLS] cho câu truy vấn i
-//       const clsEmbeddingStartIndex =
-//         i * (queryEmbeddings.dims[1] * embeddingSize); // Dòng * số token * kích thước embedding
-//       const clsEmbedding = embeddingsData.slice(
-//         clsEmbeddingStartIndex,
-//         clsEmbeddingStartIndex + embeddingSize
-//       );
-
-//       // Lưu embedding [CLS] của câu truy vấn vào mảng processedQueryEmbeddings
-//       for (let j = 0; j < embeddingSize; j++) {
-//         processedQueryEmbeddings[i * embeddingSize + j] = clsEmbedding[j];
-//       }
-//     }
-
-//     const queryArrayNormal = Array.from(processedQueryEmbeddings);
-
-//     const { labels, distances } = faissIndex.search(queryArrayNormal, 3);
-
-//     // const converQueryArray = Array.from(new Float32Array(queryArray));
-//     // console.log(queryArray);
-//     // console.log("labels[0]", labels[0]);
-//     // console.log("faqEmbeddingsArray", faqEmbeddingsArray);
-//     // console.log(
-//     //   "faqEmbeddingsArray with labels",
-//     //   faqEmbeddingsArray[labels[0]]
-//     // );
-
-//     // console.log("Shape of faqEmbeddingsArray:", faqEmbeddingsArray.shape);
-
-//     // console.log(labels[0]);
-
-//     // Tính toán chỉ số bắt đầu của vector thứ 122 trong mảng
-//     // const faqEmbeddingsArray = faqEmbeddings;
-//     // const index = 122;
-//     // const startIndex = index * embeddingSize;
-//     // // Trích xuất vector [CLS] tại vị trí 122
-//     // let clsVectorAtIndex122 = faqEmbeddingsArray.slice(
-//     //   startIndex,
-//     //   startIndex + embeddingSize
-//     // );
-
-//     // In ra vector đã trích xuất
-//     // console.log(queryArrayNormal);
-//     // console.log(clsVectorAtIndex122);
-
-//     // console.log(
-//     //   "cosin",
-//     //   cosineSimilarity(queryArrayNormal, Array.from(clsVectorAtIndex122))
-//     // );
-
-//     const topMatch = labels.map((item, index) => ({
-//       match: faqQuestions[item],
-//       score: 0,
-//     }));
-
-//     console.log("topmatch", topMatch);
-
-//     // return {
-//     //   match: faqQuestions[bestMatchIndex],
-//     //   score: bestMatchScore, // Độ tương đồng
-//     // };
-//   } catch (error) {
-//     console.log(error);
-
-//     throw new Error(error.message);
-//   }
-// };
 
 // Search in document
 
@@ -183,20 +64,56 @@ const searchInDocument = async (query, docPath) => {
     throw new Error("Lỗi khi đọc file: " + error.message);
   }
 };
+// Find by keyword
+const generateNewQuery = async (userQuery, data) => {
+  try {
+    const isValid = data.every((item) => areObjectValid(["match"], item));
+    if (
+      !isValid ||
+      !areObjectValid(["userQuery"], {
+        userQuery,
+      })
+    ) {
+      throw new Error("Data is invalid");
+    }
+
+    const convertMatch = data.map((item) => item.match).join(". ") + "...";
+
+    const prompt = `Thông tin tham khảo: ${convertMatch} \nMột người có câu hỏi "${userQuery}":\nDựa trên các câu hỏi được cung cấp ở "Thông tin tham khảo", hãy cung cấp cho tôi câu hỏi có trong Thông tin tham khảo có ý nghĩa giống với câu hỏi của người dùng nhất.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Bạn là một trợ lý lọc câu hỏi trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào thì chỉ trả về 1 chữ: Null",
+        },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 500,
+    });
+    // console.log(response.choices[0].message.content);
+    return response.choices[0].message.content;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 // Search in GPT-4
-const generateGpt4Response = async (data, userIP) => {
+const generateGpt4Response = async (userQuery, data, userIP) => {
   try {
-    // if (typeof userQuery !== "string" || !userQuery)
-    //   throw new Error("Data is invalid");
-    if (areObjectValid(["match"], data)) {
+    const isValid = areObjectValid(["userQuery", "userIP"], {
+      userQuery,
+      userIP,
+    });
+    if (!isValid || !data.every((item) => areObjectValid(["match"], item))) {
+      throw new Error("Data is invalid");
     }
-    console.log(data);
-
     const additionalData = await Promise.all(
-      data.data.map(async (item) => {
+      data.map(async (item) => {
         const answer = await faqCollection.findOne({ Question: item.match });
-        return answer.Answer;
+        return answer.Question + ":" + answer.Answer + ";";
       })
     );
     const contextInfo =
@@ -204,15 +121,17 @@ const generateGpt4Response = async (data, userIP) => {
         ? `\n\nThông tin tham khảo:\n${additionalData.join("\n")}`
         : "";
 
-    const prompt = `Một sinh viên hỏi: ${data.userQuery}\n\nDựa trên thông tin tìm được trên internet và dữ liệu có sẵn, hãy cung cấp một câu trả lời hữu ích, ngắn gọn và thân thiện. Dẫn nguồn nếu có thể.${contextInfo}`;
+    const prompt = `Một sinh viên hỏi: ${userQuery}\n\nDựa trên thông tin tìm được trên internet và dữ liệu có sẵn, hãy cung cấp một câu trả lời hữu ích, ngắn gọn và thân thiện. Dẫn nguồn nếu có thể.${contextInfo}`;
+
+    // console.log(prompt);
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
           content:
-            "Bạn là một trợ lý tuyển sinh trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích.",
+            "Bạn là một trợ lý tuyển sinh trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích",
         },
         { role: "user", content: prompt },
       ],
@@ -222,13 +141,17 @@ const generateGpt4Response = async (data, userIP) => {
     const newData = {
       user_ip: userIP,
       timestamp: new Date(),
-      user_message: data.userQuery,
+      user_message: userQuery,
       bot_response: response.choices[0].message.content,
     };
     const responseGPT = await saveChatLog(newData);
-
-    return responseGPT;
+    return {
+      ...responseGPT._doc,
+      bestQuestion: userQuery,
+    };
   } catch (error) {
+    // console.log(error);
+
     throw new Error(error.message);
   }
 };
@@ -335,6 +258,14 @@ const deleteChatLogById = async (id) => {
 
 //generateBestMatch
 const generateBestMatch = async (userQuery, question, userIP) => {
+  const isValid = areObjectValid(["userQuery", "question", "userIP"], {
+    userQuery,
+    question,
+    userIP,
+  });
+  if (!isValid) {
+    throw new Error("Data is invalid");
+  }
   const responseFaq = await faqCollection.findOne({
     Question: question,
   });
@@ -345,35 +276,44 @@ const generateBestMatch = async (userQuery, question, userIP) => {
     user_message: userQuery,
     bot_response: responseFaq.Answer,
   };
-  return await saveChatLog(newData);
+  const resChatLog = await saveChatLog(newData);
+  return {
+    ...resChatLog._doc,
+    bestQuestion: question,
+  };
 };
 
 // Handle user query
 const handleUserQuery = async (userQuery, userIP) => {
   try {
     if (!userQuery) throw new Error("Data is invalid");
-    const topMatch = await findBestMatch(userQuery);
+    let topMatch = await findBestMatch(userQuery);
     let response;
-    const bestMatch = topMatch[0];
+    let bestMatch = topMatch[0];
 
-    if (bestMatch.score > 0.86) {
+    // console.log("topMatch1", topMatch);
+
+    if (bestMatch.score > 0.9) {
       response = generateBestMatch(userQuery, bestMatch.match, userIP);
     } else {
-      const newQuery = generateNewQuery(userQuery);
-      const topMatch = await findBestMatch(newQuery);
-      const bestMatch = topMatch.reduce(
+      const newQuery = await generateNewQuery(userQuery, topMatch);
+      // const newQuery = "Null";
+      topMatch = await findBestMatch(newQuery);
+      // console.log("topMatch2", topMatch);
+
+      bestMatch = topMatch.reduce(
         (max, item) => (item.score > max.score ? item : max),
         { match: "", score: -Infinity }
       );
-      if (bestMatch > 0.86) {
+      if (bestMatch.score > 0.9) {
         response = generateBestMatch(userQuery, bestMatch.match, userIP);
       } else {
-        response = topMatch;
+        response = await generateGpt4Response(userQuery, topMatch, userIP);
       }
     }
-
     return response;
   } catch (error) {
+    // console.log(error);
     throw new Error(error.message);
   }
 };

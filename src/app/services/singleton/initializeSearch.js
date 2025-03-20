@@ -1,8 +1,6 @@
-const { log } = require("@tensorflow/tfjs");
 const faqCollection = require("../../models/faqtuyensinh");
 const faiss = require("faiss-node");
 require("dotenv").config();
-// const cosineSimilarity = require("compute-cosine-similarity");
 
 let encoder = null;
 let faissIndex = null;

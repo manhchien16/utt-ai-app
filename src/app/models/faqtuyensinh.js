@@ -15,7 +15,6 @@ const faqtuyensinhSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-faqtuyensinhSchema.index({ Question: "text" });
 
 module.exports = mongoose.model(
   "Faqtuyensinh",

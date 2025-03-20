@@ -15,8 +15,4 @@ const cosineSimilarity = (vecA, vecB) => {
   return dotProduct / (magnitudeA * magnitudeB);
 };
 
-const generateNewQuery = (userQuery) => {
-  return userQuery + QUERY_KEYWORD.UTT_DETAIL;
-};
-
-module.exports = { areObjectValid, cosineSimilarity, generateNewQuery };
+module.exports = { areObjectValid, cosineSimilarity };
