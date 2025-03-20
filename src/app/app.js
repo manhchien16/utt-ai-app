@@ -1,12 +1,17 @@
 const session = require("express-session");
 const express = require("express");
 const bodyParser = require("body-parser");
-const { initializeSearch } = require("./services/singleton/initializeSearch");
+const {
+  initializeSearch,
+  initializeSearchs,
+} = require("./services/singleton/initializeSearch");
 const chatbotRouters = require("../router/chatbot");
 const feedbackRouters = require("../router/feedback");
 const faqRouters = require("../router/faq");
 const chatLogRouters = require("../router/chatLog");
 const cors = require("cors");
+const { PCA } = require("ml-pca");
+const { Matrix, SVD } = require("ml-matrix");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -29,10 +34,11 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-//cofig start server
+// cofig start server
 const startServer = async () => {
   try {
     await initializeSearch();
+    // await initializeSearchs();
     app.listen(PORT, () => {
       console.log(`Server is running in http://localhost:${PORT}`);
     });

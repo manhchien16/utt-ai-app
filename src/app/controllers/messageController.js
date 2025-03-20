@@ -13,9 +13,9 @@ const handleUserQuery = async (req, res) => {
 
 const generateGpt4Response = async (req, res) => {
   try {
-    const userQuery = req.body.userQuery;
+    const data = req.body;
     const userIP = req.ip;
-    const resData = await chatbotSevice.generateGpt4Response(userQuery, userIP);
+    const resData = await chatbotSevice.generateGpt4Response(data, userIP);
     res.status(200).json(resData);
   } catch (error) {
     res.status(500).json({ error: error.message });
