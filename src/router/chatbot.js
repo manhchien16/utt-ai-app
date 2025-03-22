@@ -6,7 +6,7 @@ const {
 } = require("../app/controllers/messageController");
 require("dotenv").config();
 
-router.post("/chatbot/asks", handleUserQuery);
-router.post("/chatbot/askbygpt", generateGpt4Response);
+router.post("/asks", handleUserQuery);
+router.post("/askbygpt", generateGpt4Response);
 
 module.exports = router;

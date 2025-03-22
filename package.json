@@ -22,5 +22,10 @@
     "ml-pca": "^4.1.1",
     "mongoose": "^8.12.1",
     "openai": "^4.86.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.0",
+    "xlsx": "^0.18.5"
   }
 }
