@@ -1,14 +1,15 @@
-const { areObjectValid } = require("../../common/functionCommon");
+const {
+  areObjectValid,
+  cosineSimilarity,
+} = require("../../common/functionCommon");
 const faqCollection = require("../models/faqtuyensinh");
 const chatlogCollection = require("../models/chatlog");
 const { OpenAI } = require("openai");
 const mammoth = require("mammoth");
 const fs = require("fs-extra");
 require("dotenv").config();
-require("@tensorflow/tfjs-node");
 
 const { getSearchData } = require("./singleton/initializeSearch");
-const cosineSimilarity = require("compute-cosine-similarity");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -20,36 +21,37 @@ const findBestMatch = async (userQuery) => {
 
     const faqData = await faqCollection.find({}, "-_id Question").lean();
 
-    const queryEmbedding = await encoder.embed([userQuery]);
-    const queryArray = queryEmbedding.arraySync().flat();
+    const convertQuery = [userQuery];
+    const queryEmbedding = await Promise.all(
+      convertQuery.map(async (q) => {
+        const embedding = await encoder(q, { pooling: "mean" });
+        return embedding.tolist()[0];
+      })
+    );
+    const queryArray = Array.from(new Float32Array(queryEmbedding.flat()));
 
-    const { labels } = faissIndex.search(queryArray, 3);
+    const { labels, distances } = faissIndex.search(queryArray, 15);
 
-    const bestMatchIndex = labels[0];
+    const faqEmbeddingsArray = faqEmbeddings;
 
-    const faqEmbeddingsArray = faqEmbeddings.arraySync();
-    const bestMatchEmbedding = faqEmbeddingsArray[bestMatchIndex];
+    const topMatch = labels
+      .map((item, index) => ({
+        match: faqData[item]?.Question || "Dữ liệu lỗi",
+        score: cosineSimilarity(
+          queryArray,
+          Array.from(faqEmbeddingsArray[item] || [])
+        ),
+      }))
+      .sort((a, b) => b.score - a.score);
 
-    const topMatch = labels.map((item, index) => ({
-      match: faqData[item].Question,
-      score: cosineSimilarity(queryArray, faqEmbeddingsArray[item]),
-    }));
-
-    return topMatch;
+    return topMatch.slice(0, Math.min(6, topMatch.length));
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-// Hàm tính khoảng cách Euclidean
-const euclideanDistance = (vecA, vecB) => {
-  if (vecA.length !== vecB.length) return Infinity;
-  return Math.sqrt(
-    vecA.reduce((sum, val, i) => sum + Math.pow(val - vecB[i], 2), 0)
-  );
-};
-
 // Search in document
+
 const searchInDocument = async (query, docPath) => {
   if (!fs.existsSync(docPath)) return null;
   try {
@@ -62,20 +64,74 @@ const searchInDocument = async (query, docPath) => {
     throw new Error("Lỗi khi đọc file: " + error.message);
   }
 };
-
-// Search in GPT-4
-const generateGpt4Response = async (userQuery, userIP) => {
+// Find by keyword
+const generateNewQuery = async (userQuery, data) => {
   try {
-    if (typeof userQuery !== "string" || !userQuery)
+    const isValid = data.every((item) => areObjectValid(["match"], item));
+    if (
+      !isValid ||
+      !areObjectValid(["userQuery"], {
+        userQuery,
+      })
+    ) {
       throw new Error("Data is invalid");
-    const prompt = `Một sinh viên hỏi: ${userQuery}\n\nDựa trên thông tin tìm được trên internet, hãy cung cấp một câu trả lời hữu ích, ngắn gọn và thân thiện. Dẫn nguồn nếu có thể.`;
+    }
+
+    const convertMatch = data.map((item) => item.match).join(". ") + "...";
+
+    const prompt = `Thông tin tham khảo: ${convertMatch} \nMột người có câu hỏi "${userQuery}":\nDựa trên các câu hỏi được cung cấp ở "Thông tin tham khảo", hãy cung cấp cho tôi câu hỏi có trong Thông tin tham khảo có ý nghĩa giống với câu hỏi của người dùng nhất.`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: "Bạn là một trợ lý tuyển sinh đại học hữu ích.",
+          content:
+            "Bạn là một trợ lý lọc câu hỏi trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào thì chỉ trả về 1 chữ: Null",
+        },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 500,
+    });
+    // console.log(response.choices[0].message.content);
+    return response.choices[0].message.content;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+// Search in GPT-4
+const generateGpt4Response = async (userQuery, data, userIP) => {
+  try {
+    const isValid = areObjectValid(["userQuery", "userIP"], {
+      userQuery,
+      userIP,
+    });
+    if (!isValid || !data.every((item) => areObjectValid(["match"], item))) {
+      throw new Error("Data is invalid");
+    }
+    const additionalData = await Promise.all(
+      data.map(async (item) => {
+        const answer = await faqCollection.findOne({ Question: item.match });
+        return answer.Question + ":" + answer.Answer + ";";
+      })
+    );
+    const contextInfo =
+      additionalData.length > 0
+        ? `\n\nThông tin tham khảo:\n${additionalData.join("\n")}`
+        : "";
+
+    const prompt = `Một sinh viên hỏi: ${userQuery}\n\nDựa trên thông tin tìm được trên internet và dữ liệu có sẵn, hãy cung cấp một câu trả lời hữu ích, ngắn gọn và thân thiện. Dẫn nguồn nếu có thể.${contextInfo}`;
+
+    // console.log(prompt);
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Bạn là một trợ lý tuyển sinh trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích",
         },
         { role: "user", content: prompt },
       ],
@@ -89,9 +145,13 @@ const generateGpt4Response = async (userQuery, userIP) => {
       bot_response: response.choices[0].message.content,
     };
     const responseGPT = await saveChatLog(newData);
-
-    return responseGPT;
+    return {
+      ...responseGPT._doc,
+      bestQuestion: userQuery,
+    };
   } catch (error) {
+    // console.log(error);
+
     throw new Error(error.message);
   }
 };
@@ -196,34 +256,64 @@ const deleteChatLogById = async (id) => {
   }
 };
 
+//generateBestMatch
+const generateBestMatch = async (userQuery, question, userIP) => {
+  const isValid = areObjectValid(["userQuery", "question", "userIP"], {
+    userQuery,
+    question,
+    userIP,
+  });
+  if (!isValid) {
+    throw new Error("Data is invalid");
+  }
+  const responseFaq = await faqCollection.findOne({
+    Question: question,
+  });
+
+  const newData = {
+    user_ip: userIP,
+    timestamp: new Date(),
+    user_message: userQuery,
+    bot_response: responseFaq.Answer,
+  };
+  const resChatLog = await saveChatLog(newData);
+  return {
+    ...resChatLog._doc,
+    bestQuestion: question,
+  };
+};
+
 // Handle user query
 const handleUserQuery = async (userQuery, userIP) => {
   try {
     if (!userQuery) throw new Error("Data is invalid");
-    const topMatch = await findBestMatch(userQuery);
+    let topMatch = await findBestMatch(userQuery);
     let response;
-    const bestMatch = topMatch.reduce(
-      (max, item) => (item.score > max.score ? item : max),
-      { match: "", score: -Infinity }
-    );
+    let bestMatch = topMatch[0];
 
-    if (bestMatch.score < 0.86) {
-      response = topMatch;
+    // console.log("topMatch1", topMatch);
+
+    if (bestMatch.score > 0.9) {
+      response = generateBestMatch(userQuery, bestMatch.match, userIP);
     } else {
-      const responseFaq = await faqCollection.findOne({
-        Question: bestMatch.match,
-      });
+      const newQuery = await generateNewQuery(userQuery, topMatch);
+      // const newQuery = "Null";
+      topMatch = await findBestMatch(newQuery);
+      // console.log("topMatch2", topMatch);
 
-      const newData = {
-        user_ip: userIP,
-        timestamp: new Date(),
-        user_message: userQuery,
-        bot_response: responseFaq.Answer,
-      };
-      response = await saveChatLog(newData);
+      bestMatch = topMatch.reduce(
+        (max, item) => (item.score > max.score ? item : max),
+        { match: "", score: -Infinity }
+      );
+      if (bestMatch.score > 0.9) {
+        response = generateBestMatch(userQuery, bestMatch.match, userIP);
+      } else {
+        response = await generateGpt4Response(userQuery, topMatch, userIP);
+      }
     }
     return response;
   } catch (error) {
+    // console.log(error);
     throw new Error(error.message);
   }
 };

@@ -1,56 +1,60 @@
 const faqCollection = require("../../models/faqtuyensinh");
 const faiss = require("faiss-node");
 require("dotenv").config();
-const use = require("@tensorflow-models/universal-sentence-encoder");
 
 let encoder = null;
 let faissIndex = null;
 let faqEmbeddings = null;
 let initialized = false;
+let pipeline = null;
+
+const loadPipeline = async () => {
+  const { pipeline } = await import("@xenova/transformers");
+  const model = await pipeline(
+    "feature-extraction",
+    "Xenova/all-mpnet-base-v2"
+  );
+  return model;
+};
 
 const initializeSearch = async () => {
-  if (initialized) return { encoder, faissIndex, faqEmbeddings };
+  try {
+    // Load model SBERT
+    encoder = await loadPipeline();
+    if (!encoder) throw new Error("🚨 Lỗi tải mô hình SBERT.");
+    console.log("✅ SBERT model loaded!");
 
-  let attempt = 0;
-  const maxAttempts = 3;
+    // get data FAQ từ MongoDB
+    const faqData = await faqCollection.find({}, "-_id");
 
-  while (attempt < maxAttempts) {
-    try {
-      // console.log(`🔄 Attempt ${attempt + 1}: Loading model USE...`);
-      encoder = await use.load();
-      // console.log("✅ Model USE already!");
+    // query FAQ
+    const faqQuestions = faqData.map((item) => item.Question);
 
-      const faqData = await faqCollection.find({}, "-_id");
-      if (!faqData.length) {
-        // console.log("❌ No data FAQ.");
-        initialized = true;
-        return null;
-      }
+    faqEmbeddings = await Promise.all(
+      faqQuestions.map(async (q) => {
+        const embedding = await encoder(q, { pooling: "mean" });
+        return embedding.tolist()[0];
+      })
+    );
+    const dim = faqEmbeddings[0].length;
 
-      const faqQuestions = faqData.map((item) => item.Question);
-      faqEmbeddings = await encoder.embed(faqQuestions);
+    const flatEmbeddings = Array.from(new Float32Array(faqEmbeddings.flat()));
 
-      // console.log(faqEmbeddings.shape);
-      // console.log(faqEmbeddings.arraySync().flat().length);
+    // Create FAISS Index
+    faissIndex = new faiss.IndexFlatL2(dim);
+    faissIndex.add(flatEmbeddings);
+    console.log(
+      "✅ Thêm embeddings vào FAISS thành công!",
+      faissIndex.ntotal()
+    );
 
-      faissIndex = new faiss.IndexFlatL2(faqEmbeddings.shape[1]);
-      faissIndex.add(Array.from(faqEmbeddings.arraySync().flat()));
-
-      initialized = true;
-      return { encoder, faissIndex, faqEmbeddings };
-    } catch (error) {
-      attempt++;
-      if (attempt >= maxAttempts) {
-        throw new Error(
-          "🚨 Maximum retry attempts reached. Failed to initialize."
-        );
-      }
-      throw new Error(`❌ Error initializeSearch (Attempt ${attempt}):`, error);
-    }
+    initialized = true;
+    return { encoder, faissIndex, faqEmbeddings };
+  } catch (error) {
+    throw new Error(error.message);
   }
 };
 
-// get model USE and faissIndex
 const getSearchData = () => {
   if (!initialized) {
     throw new Error("🚨 initializeSearch not already!");

@@ -3,10 +3,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { initializeSearch } = require("./services/singleton/initializeSearch");
 const chatbotRouters = require("../router/chatbot");
-const feedbackRouters = require("../router/feedback");
 const faqRouters = require("../router/faq");
 const chatLogRouters = require("../router/chatLog");
+const modelRouters = require("../router/model");
 const cors = require("cors");
+const { PCA } = require("ml-pca");
+const { Matrix, SVD } = require("ml-matrix");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -29,7 +31,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-//cofig start server
+// cofig start server
 const startServer = async () => {
   try {
     await initializeSearch();
@@ -42,7 +44,7 @@ const startServer = async () => {
 };
 startServer();
 
-app.use("/api/v1", chatbotRouters);
-app.use("/api/v1", feedbackRouters);
-app.use("/api/v1", faqRouters);
-app.use("/api/v1", chatLogRouters);
+app.use("/api/v1/chatbot", chatbotRouters);
+app.use("/api/v1/faq", faqRouters);
+app.use("/api/v1/chatlog", chatLogRouters);
+app.use("/api/v1/model", modelRouters);
