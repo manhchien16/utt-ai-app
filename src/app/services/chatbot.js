@@ -204,19 +204,6 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
   }
 };
 
-// save FAQ data
-const saveFAQData = async (data) => {
-  try {
-    if (!areObjectValid(["Question", "Answer"], data)) {
-      throw new Error("Data is invalid");
-    }
-    const createFAQ = await faqCollection.insertOne(data);
-    return createFAQ;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
 // Save chat log
 const saveChatLog = async (data) => {
   try {
@@ -232,73 +219,6 @@ const saveChatLog = async (data) => {
       problem_detail: data.feedback || "",
     });
     return createChatlog;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-// save feedback
-const saveFeedback = async (data) => {
-  try {
-    if (!areObjectValid(["id", "feedback"], data)) {
-      throw new Error("Data is invalid");
-    }
-    const findFeedback = await chatlogCollection.findById(data.id);
-    if (!findFeedback) {
-      throw new Error("data not found");
-    }
-    const updateChatlog = await chatlogCollection.findByIdAndUpdate(
-      findFeedback._id,
-      {
-        is_good: false,
-        problem_detail: data.feedback,
-      },
-      { new: true }
-    );
-
-    return updateChatlog;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-// Get all chat logs
-const getAllChatLogs = async () => {
-  try {
-    return await chatlogCollection.find({}, "-__v").lean();
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-// Get all FAQ
-const getAllFAQ = async () => {
-  try {
-    return await faqCollection.find({}, "-__v").lean();
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-// delete FAQ
-const deleteFaqById = async (id) => {
-  try {
-    if (id) {
-      await faqCollection.findByIdAndDelete(id);
-      return "Delete Success!";
-    }
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-// delete ChatLog
-const deleteChatLogById = async (id) => {
-  try {
-    if (id) {
-      await chatlogCollection.findByIdAndDelete(id);
-      return "Delete Success!";
-    }
   } catch (error) {
     throw new Error(error.message);
   }
@@ -367,9 +287,4 @@ const handleUserQuery = async (userQuery, userIP) => {
 module.exports = {
   handleUserQuery,
   generateGpt4Response,
-  saveFeedback,
-  getAllChatLogs,
-  getAllFAQ,
-  deleteFaqById,
-  deleteChatLogById,
 };
