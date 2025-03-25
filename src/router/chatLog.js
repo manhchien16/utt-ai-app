@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { deleteChatLogById } = require("../app/controllers/chatLogController");
 const {
+  deleteChatLogById,
   getAllChatLogs,
   saveFeedback,
-} = require("../app/controllers/messageController");
+} = require("../app/controllers/chatLogController");
 require("dotenv").config();
 
 router.delete("/:id", deleteChatLogById);

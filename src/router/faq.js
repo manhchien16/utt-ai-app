@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { deleteFaqById } = require("../app/controllers/faqController");
-const { getAllFAQ } = require("../app/controllers/messageController");
+const {
+  deleteFaqById,
+  getAllFAQ,
+} = require("../app/controllers/faqController");
 require("dotenv").config();
 
 router.delete("/:id", deleteFaqById);
