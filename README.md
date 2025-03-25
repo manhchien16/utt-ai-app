@@ -58,6 +58,10 @@ docker-compose up -d
 npm run dev
 ```
 
+```run test
+npx jest tests/chatbot.test.js --detectOpenHandles;
+```
+
 ## API Endpoints
 
 ### 1. Xử lý câu hỏi người dùng

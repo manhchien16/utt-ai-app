@@ -1,7 +1,10 @@
 const session = require("express-session");
 const express = require("express");
 const bodyParser = require("body-parser");
-const { initializeSearch } = require("./services/singleton/initializeSearch");
+const {
+  initializeSearch,
+  initializeSearchDoc,
+} = require("./services/singleton/initializeSearch");
 const chatbotRouters = require("../router/chatbot");
 const faqRouters = require("../router/faq");
 const chatLogRouters = require("../router/chatLog");
@@ -34,6 +37,7 @@ app.use(cors(corsOptions));
 // cofig start server
 const startServer = async () => {
   try {
+    await initializeSearchDoc();
     await initializeSearch();
     app.listen(PORT, () => {
       console.log(`Server is running in http://localhost:${PORT}`);

@@ -15,4 +15,15 @@ const cosineSimilarity = (vecA, vecB) => {
   return dotProduct / (magnitudeA * magnitudeB);
 };
 
-module.exports = { areObjectValid, cosineSimilarity };
+const splitTextIntoChunks = (text, chunkSize = 512, overlap = 128) => {
+  const words = text.split(/\s+/);
+  const chunks = [];
+
+  for (let i = 0; i < words.length; i += chunkSize - overlap) {
+    const chunk = words.slice(i, i + chunkSize).join(" ");
+    chunks.push(chunk);
+  }
+  return chunks;
+};
+
+module.exports = { areObjectValid, cosineSimilarity, splitTextIntoChunks };

@@ -1,12 +1,17 @@
 const faqCollection = require("../../models/faqtuyensinh");
 const faiss = require("faiss-node");
+const mammoth = require("mammoth");
 require("dotenv").config();
+const path = require("path");
+const { DOC_PATH } = require("../../../common/constanCommon");
+const { splitTextIntoChunks } = require("../../../common/functionCommon");
 
 let encoder = null;
 let faissIndex = null;
+let faissIndexDoc = null;
+let chuck = null;
 let faqEmbeddings = null;
 let initialized = false;
-let pipeline = null;
 
 const loadPipeline = async () => {
   const { pipeline } = await import("@xenova/transformers");
@@ -17,10 +22,27 @@ const loadPipeline = async () => {
   return model;
 };
 
+const initializeSearchDoc = async () => {
+  try {
+    encoder = await loadPipeline();
+
+    const docPath = path.resolve(__dirname, DOC_PATH);
+    const { value: dataDoc } = await mammoth.extractRawText({ path: docPath });
+    chuck = splitTextIntoChunks(dataDoc.toLowerCase());
+    const docEmbedings = await encoder(chuck, { pooling: "mean" });
+
+    faissIndexDoc = new faiss.IndexFlatL2(docEmbedings.dims[1]);
+    faissIndexDoc.add(Array.from(docEmbedings.data));
+  } catch (error) {
+    // console.log(error);
+    throw new Error(error.message);
+  }
+};
+
 const initializeSearch = async () => {
   try {
     // Load model SBERT
-    encoder = await loadPipeline();
+    // encoder = await loadPipeline();
     if (!encoder) throw new Error("🚨 Lỗi tải mô hình SBERT.");
     console.log("✅ SBERT model loaded!");
 
@@ -59,7 +81,7 @@ const getSearchData = () => {
   if (!initialized) {
     throw new Error("🚨 initializeSearch not already!");
   }
-  return { encoder, faissIndex, faqEmbeddings };
+  return { encoder, faissIndex, faqEmbeddings, faissIndexDoc, chuck };
 };
 
-module.exports = { initializeSearch, getSearchData };
+module.exports = { initializeSearch, getSearchData, initializeSearchDoc };
