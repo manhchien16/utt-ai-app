@@ -27,7 +27,7 @@ app.use(
 );
 //cofig cors
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: process.env.DOMAIN_FE,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -40,7 +40,7 @@ const startServer = async () => {
     await initializeSearchDoc();
     await initializeSearch();
     app.listen(PORT, () => {
-      console.log(`Server is running in http://localhost:${PORT}`);
+      console.log(`Server is running on ${PORT}`);
     });
   } catch (error) {
     console.error("Error running server:", error);
