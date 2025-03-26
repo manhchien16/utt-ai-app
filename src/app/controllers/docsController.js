@@ -1,4 +1,4 @@
-const docsService = require("../services/docs");
+const docsService = require("../services/docsService");
 const path = require("path");
 const DOC_PATH = "../../docs/ttc_ts25.docx";
 const docPath = path.resolve(__dirname, DOC_PATH);
