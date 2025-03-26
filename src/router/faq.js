@@ -6,7 +6,7 @@ const {
 } = require("../app/controllers/faqController");
 require("dotenv").config();
 
-router.delete("/:id", deleteFaqById);
+router.delete("/delete", deleteFaqById);
 router.get("/", getAllFAQ);
 
 module.exports = router;

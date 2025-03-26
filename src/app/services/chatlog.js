@@ -21,6 +21,30 @@ const getAllChatLogs = async () => {
   }
 };
 
+//delete chatlog by useId
+const deleteChatlogByUserIp = async (id) => {
+  try {
+    if (!id) throw new Error("Missing IP address");
+
+    const result = await chatlogCollection.deleteMany({ user_ip: id });
+
+    if (result.deletedCount === 0) {
+      throw new Error("IP doesn't exist or no records found");
+    }
+
+    return { message: "Delete successfully!" };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+//get chatlog by useIp
+const getChatlogByUserIp = async (id) => {
+  if (!id) throw new Error("Missing Ip address");
+  const result = await chatlogCollection.find({ user_ip: id });
+  return result;
+};
+
 // save feedback
 const saveFeedback = async (data) => {
   try {
@@ -46,4 +70,10 @@ const saveFeedback = async (data) => {
   }
 };
 
-module.exports = { getAllChatLogs, deleteChatLogById, saveFeedback };
+module.exports = {
+  getAllChatLogs,
+  deleteChatLogById,
+  saveFeedback,
+  deleteChatlogByUserIp,
+  getChatlogByUserIp,
+};

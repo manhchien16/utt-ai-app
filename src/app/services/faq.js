@@ -13,12 +13,19 @@ const saveFAQData = async (data) => {
   }
 };
 // delete FAQ
-const deleteFaqById = async (id) => {
+const deleteFaqById = async (ids) => {
   try {
-    if (id) {
-      await faqCollection.findByIdAndDelete(id);
-      return "Delete Success!";
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error("Data is invalid");
     }
+
+    const result = await faqCollection.deleteMany({ _id: { $in: ids } });
+
+    if (result.deletedCount === 0) {
+      throw new Error("Not FAQ Data");
+    }
+
+    return result;
   } catch (error) {
     throw new Error(error.message);
   }

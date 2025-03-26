@@ -25,16 +25,13 @@ const loadPipeline = async () => {
 const initializeSearchDoc = async () => {
   try {
     encoder = await loadPipeline();
-
     const docPath = path.resolve(__dirname, DOC_PATH);
     const { value: dataDoc } = await mammoth.extractRawText({ path: docPath });
     chuck = splitTextIntoChunks(dataDoc.toLowerCase());
     const docEmbedings = await encoder(chuck, { pooling: "mean" });
-
     faissIndexDoc = new faiss.IndexFlatL2(docEmbedings.dims[1]);
     faissIndexDoc.add(Array.from(docEmbedings.data));
   } catch (error) {
-    // console.log(error);
     throw new Error(error.message);
   }
 };
@@ -42,16 +39,12 @@ const initializeSearchDoc = async () => {
 const initializeSearch = async () => {
   try {
     // Load model SBERT
-    // encoder = await loadPipeline();
     if (!encoder) throw new Error("🚨 Lỗi tải mô hình SBERT.");
     console.log("✅ SBERT model loaded!");
-
     // get data FAQ từ MongoDB
     const faqData = await faqCollection.find({}, "-_id");
-
     // query FAQ
     const faqQuestions = faqData.map((item) => item.Question);
-
     faqEmbeddings = await Promise.all(
       faqQuestions.map(async (q) => {
         const embedding = await encoder(q, { pooling: "mean" });
@@ -59,9 +52,7 @@ const initializeSearch = async () => {
       })
     );
     const dim = faqEmbeddings[0].length;
-
     const flatEmbeddings = Array.from(new Float32Array(faqEmbeddings.flat()));
-
     // Create FAISS Index
     faissIndex = new faiss.IndexFlatL2(dim);
     faissIndex.add(flatEmbeddings);
@@ -69,7 +60,6 @@ const initializeSearch = async () => {
       "✅ Thêm embeddings vào FAISS thành công!",
       faissIndex.ntotal()
     );
-
     initialized = true;
     return { encoder, faissIndex, faqEmbeddings };
   } catch (error) {
