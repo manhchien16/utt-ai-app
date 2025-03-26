@@ -6,7 +6,7 @@ const {
 } = require("../app/controllers/initializeSearchController");
 require("dotenv").config();
 
-router.post("/reset", resetFAQdata);
+router.post("/resetfaq", resetFAQdata);
 router.post("/resetdoc", resetDocData);
 
 module.exports = router;

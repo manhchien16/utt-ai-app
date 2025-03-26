@@ -1,5 +1,4 @@
-const chatbotSevice = require("../services/chatbot");
-const chatlogSerice = require("../services/chatlog");
+const chatbotSevice = require("../services/chatlogService");
 
 const deleteChatLogById = async (req, res) => {
   try {

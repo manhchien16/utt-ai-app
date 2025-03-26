@@ -1,4 +1,4 @@
-const faqService = require("../services/faq");
+const faqService = require("../services/faqService");
 
 const deleteFaqById = async (req, res) => {
   try {
