@@ -2,9 +2,9 @@ const faqService = require("../services/faq");
 
 const deleteFaqById = async (req, res) => {
   try {
-    const id = req.params.id;
-    const newData = await faqService.deleteFaqById(id);
-    res.status(200).json(newData);
+    const ids = req.body.ids;
+    const result = await faqService.deleteFaqById(ids);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
