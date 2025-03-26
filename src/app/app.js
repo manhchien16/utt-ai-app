@@ -9,7 +9,11 @@ const chatbotRouters = require("../router/chatbot");
 const faqRouters = require("../router/faq");
 const chatLogRouters = require("../router/chatLog");
 const modelRouters = require("../router/model");
+const healthRouters = require("../router/healthcheck");
+// const docsRouters = require("../router/document");
+const path = require("path");
 const cors = require("cors");
+
 const { PCA } = require("ml-pca");
 const { Matrix, SVD } = require("ml-matrix");
 
@@ -52,3 +56,7 @@ app.use("/api/v1/chatbot", chatbotRouters);
 app.use("/api/v1/faq", faqRouters);
 app.use("/api/v1/chatlog", chatLogRouters);
 app.use("/api/v1/model", modelRouters);
+app.use("/api/v1", healthRouters);
+// app.use("/api/v1/docs", docsRouters);
+
+app.use("/docs", express.static(path.join(__dirname, "../docs")));
