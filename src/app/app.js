@@ -15,17 +15,20 @@ const refreshTokenRouters = require("../router/token");
 const authRouters = require("../router/auth");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const setupWebSocket = require("./services/websocket");
+const http = require("http");
 
 const { PCA } = require("ml-pca");
 const { Matrix, SVD } = require("ml-matrix");
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 8080;
 // config cookie req
 app.use(cookieParser());
 // config body req
 app.use(bodyParser.json());
-//cofig session
+//config session
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -38,7 +41,7 @@ app.use(
     },
   })
 );
-//cofig cors
+//config cors
 const corsOptions = {
   origin: process.env.CLIENT_URL,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -47,7 +50,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// cofig start server
+// setup socket
+setupWebSocket(server);
+// config start server
 const startServer = async () => {
   try {
     await initializeSearchDoc();
