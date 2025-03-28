@@ -1,4 +1,3 @@
-const { areObjectValid } = require("../../common/functionCommon");
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -7,8 +6,6 @@ const userCollection = require("../models/user");
 
 const loginByGoogle = async (profile) => {
   try {
-    console.log(profile);
-
     if (!profile) throw new Error("Data is invalid");
     const { id, displayName } = profile;
     const email =

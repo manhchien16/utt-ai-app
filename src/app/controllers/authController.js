@@ -23,10 +23,8 @@ const loginByGoogle = async (req, res) => {
 const loginByFacebook = async (req, res) => {
   try {
     const data = req.user;
-    const { accessToken, refreshToken, user, role } =
+    const { accessToken, refreshToken, user } =
       await authService.loginByFacebook(data);
-    console.log({ accessToken, refreshToken, user, role });
-
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
@@ -35,7 +33,6 @@ const loginByFacebook = async (req, res) => {
     });
     res.redirect(`${process.env.CLIENT_URL}?accessToken=${accessToken}`);
   } catch (error) {
-    console.log("Login error:", error.message);
     res.redirect(`${process.env.CLIENT_URL}?error=${error.message}`);
   }
 };
