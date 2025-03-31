@@ -1,4 +1,4 @@
-const { areObjectValid } = require("../../common/functionCommon");
+const { areObjectValid, pagination } = require("../../common/functionCommon");
 const chatlogCollection = require("../models/chatlog");
 
 // delete ChatLog
@@ -13,9 +13,22 @@ const deleteChatLogById = async (id) => {
   }
 };
 // Get all chat logs
-const getAllChatLogs = async () => {
+const getAllChatLogs = async (params) => {
   try {
-    return await chatlogCollection.find({}, "-__v").lean();
+    const page = params?.page || 1;
+    const pageSize = params?.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
+    const result = await chatlogCollection
+      .find({}, "-__v")
+      .skip(skip)
+      .limit(pageSize);
+    const totalProduct = await chatlogCollection.countDocuments();
+
+    return {
+      data: result,
+      pagination: pagination(page, pageSize, totalProduct),
+    };
   } catch (error) {
     throw new Error(error.message);
   }
