@@ -26,4 +26,21 @@ const splitTextIntoChunks = (text, chunkSize = 512, overlap = 128) => {
   return chunks;
 };
 
-module.exports = { areObjectValid, cosineSimilarity, splitTextIntoChunks };
+const pagination = (page, pageSize, totalItem) => {
+  page = parseInt(page) || 1;
+  pageSize = parseInt(pageSize) || 10;
+
+  return {
+    page,
+    pageSize,
+    totalItem,
+    totalPages: Math.ceil(totalItem / pageSize),
+  };
+};
+
+module.exports = {
+  areObjectValid,
+  cosineSimilarity,
+  splitTextIntoChunks,
+  pagination,
+};

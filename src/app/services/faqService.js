@@ -32,7 +32,7 @@ const deleteFaqById = async (ids) => {
 };
 
 // Get all FAQ
-const getAllFAQ = async () => {
+const getAllFAQ = async (params) => {
   try {
     return await faqCollection.find({}, "-__v").lean();
   } catch (error) {

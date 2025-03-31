@@ -1,4 +1,4 @@
-const { access } = require("fs-extra");
+const jwt = require("jsonwebtoken");
 const {
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,

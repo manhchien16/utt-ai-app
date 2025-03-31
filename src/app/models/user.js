@@ -7,11 +7,11 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "data", "customer"],
       default: "customer",
     },
-    google_id: {
+    googleId: {
       type: String,
       default: "",
     },
-    facebook_id: {
+    facebookId: {
       type: String,
       default: "",
     },

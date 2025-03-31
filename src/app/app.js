@@ -13,13 +13,11 @@ const docsRouters = require("../router/document");
 const healthRouters = require("../router/healthcheck");
 const refreshTokenRouters = require("../router/token");
 const authRouters = require("../router/auth");
+const userRouters = require("../router/user");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const setupWebSocket = require("./services/websocket");
 const http = require("http");
-
-const { PCA } = require("ml-pca");
-const { Matrix, SVD } = require("ml-matrix");
 
 const app = express();
 const server = http.createServer(app);
@@ -55,11 +53,11 @@ setupWebSocket(server);
 // config start server
 const startServer = async () => {
   try {
-    await initializeSearchDoc();
-    await initializeSearch();
     app.listen(PORT, () => {
       console.log(`Server is running on ${PORT}`);
     });
+    await initializeSearchDoc();
+    await initializeSearch();
   } catch (error) {
     console.error("Error running server:", error);
   }
@@ -74,3 +72,4 @@ app.use("/api/v1/docs", docsRouters);
 app.use("/api/v1/auth", authRouters);
 app.use("/api/v1", healthRouters);
 app.use("/api/v1", refreshTokenRouters);
+app.use("/api/v1", userRouters);

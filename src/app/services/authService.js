@@ -31,7 +31,7 @@ const loginByGoogle = async (profile) => {
     } else {
       const newUser = new userCollection({
         fullName: displayName,
-        facebook_id: id,
+        googleId_id: id,
         email: email,
       });
       const saveUser = await newUser.save();
@@ -56,8 +56,6 @@ const loginByGoogle = async (profile) => {
 
 const loginByFacebook = async (profile) => {
   try {
-    console.log(profile);
-
     if (!profile) throw new Error("Data is invalid");
     const { id, name } = profile;
     const email =
@@ -83,7 +81,7 @@ const loginByFacebook = async (profile) => {
     } else {
       const newUser = new userCollection({
         fullName: name,
-        facebook_id: id,
+        facebookId: id,
         email: email,
       });
       const saveUser = await newUser.save();
