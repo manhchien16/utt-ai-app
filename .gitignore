@@ -1,4 +1,5 @@
+src/tests
 node_modules/
 .env
-src/tests
 test_results.xlsx
+testdata.xlsx

@@ -1375,209 +1375,234 @@ const xlsx = require("xlsx");
 //   },
 // ];
 
-const questionsTest = [
-  {
-    _id: "67db36ca2f93d2eff2fa66d2",
-    ID: "Q008",
-    Question: "bao gio co giay bao trung tuyen",
-    Answer:
-      "Thông tin về thời gian có giấy báo trúng tuyển hiện đang cập nhật, em theo dõi thêm trên website của Nhà trường nhé!",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66d3",
-    ID: "Q014",
-    Question: "hoc nganh nay sau ra truong lam gi",
-    Answer: "Em muốn tìm hiểu về ngành nào?",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66d4",
-    ID: "Q018",
-    Question: "co xet diem thi danh gia nang luc khong",
-    Answer:
-      "Năm 2025, Nhà trường có 4 phương thức xét tuyển. Chi tiết hơn ở đây em nhé: https://utt.edu.vn/tuyensinh/tuyen-sinh/dai-hoc-chinh-quy/phuong-huong-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-a16088.html",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66d5",
-    ID: "Q026",
-    Question: "hoc quan su trong bao lau",
-    Answer:
-      "Tùy kế hoạch mỗi năm nhưng thường các bạn sẽ học quân sự ở năm thứ 2 và sẽ có thông báo cụ thể sau em nhé!",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66d6",
-    ID: "Q035",
-    Question: "dang ki xet tuyen thanh con roi, co doi duoc nguyen vong khong",
-    Answer: "Có thể được em nhé!",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66d8",
-    ID: "Q040",
-    Question: "no tien bi thua thi lay lai nhu nao",
-    Answer: "Em liên hệ văn phòng tuyển sinh của Nhà trường nhé!",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66da",
-    ID: "Q063",
-    Question: "phuong thuc tuyen sinh chinh cua truong",
-    Answer:
-      "Năm nay Nhà trường có 4 phương thức xét tuyển, nhưng chủ yếu vẫn là xét tuyển sử dụng kết quả thi tốt nghiệp THPT và xét tuyển kết hợp theo đề án riêng của Trường.",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66db",
-    ID: "Q079",
-    Question: "so sinh vien nhap hoc nganh thuong mai dien tu",
-    Answer: "Năm 2024 là 204 sinh viên em nhé!",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66dc",
-    ID: "Q080",
-    Question: "so sinh vien tot nghiep nganh thuong mai dien tu",
-    Answer: "Khoá gần nhất tốt nghiệp có 114 sinh viên em nhé!",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66dd",
-    ID: "Q090",
-    Question: "chi tieu tuyen sinh nganh he thong thong tin",
-    Answer: "Năm nay khoảng 300 chỉ tiêu em nhé!",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66de",
-    ID: "Q091",
-    Question: "so sinh vien nhanh hoc nganh he thong",
-    Answer: "Đối với khoá 75 là 275 sinh viên em nhé!",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66e0",
-    ID: "Q093",
-    Question:
-      "Ty le sinh vien co viec lam sau khi ra truong nganh he thong thong tin",
-    Answer: "Có khoảng 95.45% sinh viên tốt nghiệp có việc làm!",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66e1",
-    ID: "Q094",
-    Question: "chi tieu tuyen sinh nganh cong nghe thong tin",
-    Answer: "Năm nay là 630 chỉ tiêu em nhé!",
-    CreatedTime: "2025-03-13 08:29:28.365000",
-    UpdatedTime: "2025-03-13 08:29:28.365000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f0",
-    ID: "Q138",
-    Question: "ten cua truong",
-    Answer: "Trường Đại học Công nghệ Giao thông vận tải (UTT)",
-    CreatedTime: "2025-03-13 08:29:32.277000",
-    UpdatedTime: "2025-03-13 08:29:32.277000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f1",
-    ID: "Q139",
-    Question: "Ma truong",
-    Answer: "GTA",
-    CreatedTime: "2025-03-13 08:29:32.277000",
-    UpdatedTime: "2025-03-13 08:29:32.277000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f2",
-    ID: "Q142",
-    Question: "dia chi trang mang xa hoi",
-    Answer:
-      "Fanpage: https://www.facebook.com/utt.vn; Zalo: https://zalo.me/dhcngtvt",
-    CreatedTime: "2025-03-13 08:29:32.277000",
-    UpdatedTime: "2025-03-13 08:29:32.277000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f3",
-    ID: "Q149",
-    Question: "ai la uy ban thuong vu cua truong",
-    Answer: "Đ/c Nguyễn Văn Lâm",
-    CreatedTime: "2025-03-13 08:29:32.277000",
-    UpdatedTime: "2025-03-13 08:29:32.277000",
-    Type: 1,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f4",
-    ID: "Q006",
-    Question: "truong minh co han xet tuyen den khi nao",
-    Answer: "Thông tin đang cập nhật em nhé!",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f5",
-    ID: "Q012",
-    Question: "xet tuyen hoc ba Online duoc khong",
-    Answer:
-      "Thí sinh xét  tuyển online nhé, trong trường hợp khó khăn có thể đến VP tuyển sinh thầy cô HD làm online",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f6",
-    ID: "Q016",
-    Question: "hoc song song 2 van bang",
-    Answer:
-      "Thời hạn nhận đơn học song song 2 chuyển ngành là trước khi học kỳ mới 4 tuần, em phải đảm bảo ngành chính của em điểm luôn phải trên 2.0",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-  {
-    _id: "67db36ca2f93d2eff2fa66f7",
-    ID: "Q017",
-    Question: "co can dieu kien ngoai ngu khi xet tuyen khong",
-    Answer: "Không cần em nhé!",
-    CreatedTime: "2025-03-13T12:34:56.789Z",
-    UpdatedTime: "2025-03-13T12:34:56.789Z",
-    Type: null,
-  },
-];
+// const questionsTest = [
+//   {
+//     _id: "67db36ca2f93d2eff2fa66d2",
+//     ID: "Q008",
+//     Question: "bao gio co giay bao trung tuyen",
+//     Answer:
+//       "Thông tin về thời gian có giấy báo trúng tuyển hiện đang cập nhật, em theo dõi thêm trên website của Nhà trường nhé!",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66d3",
+//     ID: "Q014",
+//     Question: "hoc nganh nay sau ra truong lam gi",
+//     Answer: "Em muốn tìm hiểu về ngành nào?",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66d4",
+//     ID: "Q018",
+//     Question: "co xet diem thi danh gia nang luc khong",
+//     Answer:
+//       "Năm 2025, Nhà trường có 4 phương thức xét tuyển. Chi tiết hơn ở đây em nhé: https://utt.edu.vn/tuyensinh/tuyen-sinh/dai-hoc-chinh-quy/phuong-huong-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-a16088.html",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66d5",
+//     ID: "Q026",
+//     Question: "hoc quan su trong bao lau",
+//     Answer:
+//       "Tùy kế hoạch mỗi năm nhưng thường các bạn sẽ học quân sự ở năm thứ 2 và sẽ có thông báo cụ thể sau em nhé!",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66d6",
+//     ID: "Q035",
+//     Question: "dang ki xet tuyen thanh con roi, co doi duoc nguyen vong khong",
+//     Answer: "Có thể được em nhé!",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66d8",
+//     ID: "Q040",
+//     Question: "no tien bi thua thi lay lai nhu nao",
+//     Answer: "Em liên hệ văn phòng tuyển sinh của Nhà trường nhé!",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66da",
+//     ID: "Q063",
+//     Question: "phuong thuc tuyen sinh chinh cua truong",
+//     Answer:
+//       "Năm nay Nhà trường có 4 phương thức xét tuyển, nhưng chủ yếu vẫn là xét tuyển sử dụng kết quả thi tốt nghiệp THPT và xét tuyển kết hợp theo đề án riêng của Trường.",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66db",
+//     ID: "Q079",
+//     Question: "so sinh vien nhap hoc nganh thuong mai dien tu",
+//     Answer: "Năm 2024 là 204 sinh viên em nhé!",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66dc",
+//     ID: "Q080",
+//     Question: "so sinh vien tot nghiep nganh thuong mai dien tu",
+//     Answer: "Khoá gần nhất tốt nghiệp có 114 sinh viên em nhé!",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66dd",
+//     ID: "Q090",
+//     Question: "chi tieu tuyen sinh nganh he thong thong tin",
+//     Answer: "Năm nay khoảng 300 chỉ tiêu em nhé!",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66de",
+//     ID: "Q091",
+//     Question: "so sinh vien nhanh hoc nganh he thong",
+//     Answer: "Đối với khoá 75 là 275 sinh viên em nhé!",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66e0",
+//     ID: "Q093",
+//     Question:
+//       "Ty le sinh vien co viec lam sau khi ra truong nganh he thong thong tin",
+//     Answer: "Có khoảng 95.45% sinh viên tốt nghiệp có việc làm!",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66e1",
+//     ID: "Q094",
+//     Question: "chi tieu tuyen sinh nganh cong nghe thong tin",
+//     Answer: "Năm nay là 630 chỉ tiêu em nhé!",
+//     CreatedTime: "2025-03-13 08:29:28.365000",
+//     UpdatedTime: "2025-03-13 08:29:28.365000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f0",
+//     ID: "Q138",
+//     Question: "ten cua truong",
+//     Answer: "Trường Đại học Công nghệ Giao thông vận tải (UTT)",
+//     CreatedTime: "2025-03-13 08:29:32.277000",
+//     UpdatedTime: "2025-03-13 08:29:32.277000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f1",
+//     ID: "Q139",
+//     Question: "Ma truong",
+//     Answer: "GTA",
+//     CreatedTime: "2025-03-13 08:29:32.277000",
+//     UpdatedTime: "2025-03-13 08:29:32.277000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f2",
+//     ID: "Q142",
+//     Question: "dia chi trang mang xa hoi",
+//     Answer:
+//       "Fanpage: https://www.facebook.com/utt.vn; Zalo: https://zalo.me/dhcngtvt",
+//     CreatedTime: "2025-03-13 08:29:32.277000",
+//     UpdatedTime: "2025-03-13 08:29:32.277000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f3",
+//     ID: "Q149",
+//     Question: "ai la uy ban thuong vu cua truong",
+//     Answer: "Đ/c Nguyễn Văn Lâm",
+//     CreatedTime: "2025-03-13 08:29:32.277000",
+//     UpdatedTime: "2025-03-13 08:29:32.277000",
+//     Type: 1,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f4",
+//     ID: "Q006",
+//     Question: "truong minh co han xet tuyen den khi nao",
+//     Answer: "Thông tin đang cập nhật em nhé!",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f5",
+//     ID: "Q012",
+//     Question: "xet tuyen hoc ba Online duoc khong",
+//     Answer:
+//       "Thí sinh xét  tuyển online nhé, trong trường hợp khó khăn có thể đến VP tuyển sinh thầy cô HD làm online",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f6",
+//     ID: "Q016",
+//     Question: "hoc song song 2 van bang",
+//     Answer:
+//       "Thời hạn nhận đơn học song song 2 chuyển ngành là trước khi học kỳ mới 4 tuần, em phải đảm bảo ngành chính của em điểm luôn phải trên 2.0",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+//   {
+//     _id: "67db36ca2f93d2eff2fa66f7",
+//     ID: "Q017",
+//     Question: "co can dieu kien ngoai ngu khi xet tuyen khong",
+//     Answer: "Không cần em nhé!",
+//     CreatedTime: "2025-03-13T12:34:56.789Z",
+//     UpdatedTime: "2025-03-13T12:34:56.789Z",
+//     Type: null,
+//   },
+// ];
 
-function removeDiacritics(str) {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
+const filePathRead = "testdata.xlsx";
+
+// function removeDiacritics(str) {
+//   return str.normalize("NFD").replace(/[̀-ͯ]/g, "");
+// }
+
+const readFromExcel = () => {
+  if (!fs.existsSync(filePathRead)) {
+    console.log("⚠️ File Excel không tồn tại!");
+    return [];
+  }
+
+  const workbook = xlsx.readFile(filePathRead);
+  const sheetName = workbook.SheetNames[0]; // Lấy sheet đầu tiên
+  const worksheet = workbook.Sheets[sheetName];
+
+  // Chuyển dữ liệu từ sheet sang JSON
+  const data = xlsx.utils.sheet_to_json(worksheet, { defval: "" });
+
+  return data.map((row) => ({
+    Question: row.Question || "",
+    Answer: row.Answer || "",
+  }));
+};
+
+// 📌 Sử dụng hàm để lấy danh sách câu hỏi và câu trả lời
+const questionsTest = readFromExcel();
+console.log("📌 Danh sách câu hỏi và câu trả lời:", questionsTest);
 
 const questions = questionsTest.map((q) => ({
   Question: q.Question,
