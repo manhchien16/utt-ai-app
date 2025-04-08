@@ -74,6 +74,7 @@ const searchInDocument = async (userQuery, UserIp) => {
     // .filter((word) => !STOP_WORDS.has(word.toLowerCase()))
     // .join(" ");
 
+    console.log(filteredText);
     const filterDoc = chuck.filter((doc) => doc.includes(filteredText));
 
     const extractContext = (doc, matchText, windowSize = 150) => {
@@ -98,11 +99,9 @@ const searchInDocument = async (userQuery, UserIp) => {
 
     const convertExtractedTexts = extractedTexts.join(" ");
 
-    // Chia nội dung thành từng câu để so sánh
     const sentences1 = convertExtractedTexts.split(". ");
     const sentences2 = resultFindByFaiss.split(". ");
 
-    // Tìm các câu trùng nhau
     const commonSentences = sentences1.filter((sentence) =>
       sentences2.includes(sentence)
     );
@@ -114,7 +113,6 @@ const searchInDocument = async (userQuery, UserIp) => {
     } else {
       result = convertExtractedTexts + "," + resultFindByFaiss;
     }
-
     return generateGpt4Response(userQuery, result, UserIp);
   } catch (error) {
     console.log(error);
@@ -143,13 +141,13 @@ const generateNewQuery = async (userQuery, data) => {
         {
           role: "system",
           content:
-            "Bạn là một trợ lý lọc câu hỏi trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích, hãy bám sát nghĩa của câu nhé, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào thì chỉ trả về 1 chữ: Null",
+            "Bạn là một trợ lý lọc và hoàn thiện câu hỏi người dùng hữu ích, hãy để ý các trường hợp người dùng nhập không dấu, bám sát nghĩa của câu nhé, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
         },
         { role: "user", content: prompt },
       ],
+      temperature: 0.3,
       max_tokens: 500,
     });
-    // console.log(response.choices[0].message.content);
     return response.choices[0].message.content;
   } catch (error) {
     throw new Error(error.message);
@@ -169,9 +167,9 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
 
     const contextInfo = `đây là bộ dữ liệu cung cấp: ${data}`;
 
-    const prompt = `Một sinh viên hỏi: ${userQuery}\n\nDựa trên thông tin tìm được trên dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, ngắn gọn, xuống dòng không bị cách quá xa và thân thiện.${contextInfo}`;
+    const prompt = `Một sinh viên hỏi: ${userQuery}\n\nHãy dùng thông tin tìm được trong dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, xuống dòng không bị tạo khoảng trắng, ngắn gọn và thân thiện.${contextInfo}`;
 
-    // console.log(prompt);
+    console.log(prompt);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -183,6 +181,7 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
         },
         { role: "user", content: prompt },
       ],
+      temperature: 0.3,
       max_tokens: 3500,
     });
 
@@ -190,7 +189,7 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
       user_ip: userIP,
       timestamp: new Date(),
       user_message: userQuery,
-      bot_response: `${response.choices[0].message.content} \n\n**Tôi là một trợ lý Ai nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực liếp vào https://utt.edu.vn/ để biết thêm!**`,
+      bot_response: `${response.choices[0].message.content} \n\n**Tôi là một trợ lý Ai nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực tiếp vào https://utt.edu.vn/ để biết thêm!**`,
     };
     const responseGPT = await saveChatLog(newData);
     return {
@@ -198,8 +197,6 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
       bestQuestion: userQuery,
     };
   } catch (error) {
-    // console.log(error);
-
     throw new Error(error.message);
   }
 };
@@ -259,19 +256,19 @@ const handleUserQuery = async (userQuery, userIP) => {
     let response;
     let bestMatch = topMatch[0];
 
-    if (bestMatch.score > 0.9) {
+    if (bestMatch.score > 0.95) {
       response = generateBestMatch(userQuery, bestMatch.match, userIP);
     } else {
+      console.log("topMatch2", topMatch);
       const newQuery = await generateNewQuery(userQuery, topMatch);
       // const newQuery = "Null";
       topMatch = await findBestMatch(newQuery);
-      // console.log("topMatch2", topMatch);
 
       bestMatch = topMatch.reduce(
         (max, item) => (item.score > max.score ? item : max),
         { match: "", score: -Infinity }
       );
-      if (bestMatch.score > 0.9) {
+      if (bestMatch.score > 0.95) {
         response = generateBestMatch(userQuery, bestMatch.match, userIP);
       } else {
         response = searchInDocument(userQuery, userIP);
@@ -279,7 +276,6 @@ const handleUserQuery = async (userQuery, userIP) => {
     }
     return response;
   } catch (error) {
-    // console.log(error);
     throw new Error(error.message);
   }
 };

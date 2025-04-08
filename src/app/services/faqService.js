@@ -3,11 +3,12 @@ const faqCollection = require("../models/faqtuyensinh");
 // save FAQ data
 const saveFAQData = async (data) => {
   try {
-    if (!areObjectValid(["Question", "Answer"], data)) {
-      throw new Error("Data is invalid");
-    }
-    const createFAQ = await faqCollection.insertOne(data);
-    return createFAQ;
+    // if (!areObjectValid(["Question", "Answer"], data)) {
+    //   throw new Error("Data is invalid");
+    // }
+    // const createFAQ = await faqCollection.insertOne(data);
+    // return createFAQ;
+    console.log(data);
   } catch (error) {
     throw new Error(error.message);
   }

@@ -1575,7 +1575,7 @@ const xlsx = require("xlsx");
 //   },
 // ];
 
-const filePathRead = "testdata.xlsx";
+const filePathRead = "data.xlsx";
 
 // function removeDiacritics(str) {
 //   return str.normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -1664,13 +1664,16 @@ const writeToExcel = (data) => {
 let check;
 
 questions.map((item) =>
-  describe("POST /chatbot/asks", () => {
+  describe("POST /faq", () => {
     it("should return chatbot response and log results", async () => {
       jest.setTimeout(10000);
-      const inputData = { userQuery: item.Question, answer: item.Answer };
+      const inputData = {
+        userQuery: item.Question,
+        answer: item.Answer ? item.Answer : "N/A",
+      };
 
       const response = await request("http://localhost:8080")
-        .post("/api/v1/chatbot/asks")
+        .post("/api/v1/faq")
         .send(inputData)
         .set("Accept", "application/json");
 
@@ -1684,7 +1687,6 @@ questions.map((item) =>
       } else {
         check - 0;
       }
-
       writeToExcel({
         status: response.status,
         input: inputData.userQuery,
