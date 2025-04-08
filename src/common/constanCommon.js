@@ -112,6 +112,7 @@ const QUERY_KEYWORD = {
 
 const STOP_WORDS = new Set([]);
 
-const DOC_PATH = "../../../docs/ttc_ts25.docx";
+// const DOC_PATH = "../../../docs/ttc_ts25.docx";
+const DOC_PATH = "../../../docs";
 
 module.exports = { QUERY_KEYWORD, DOC_PATH, STOP_WORDS };

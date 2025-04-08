@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const {
-  deleteFaqById,
-  getAllFAQ,
-} = require("../app/controllers/faqController");
+const { faqController } = require("../app/controllers/faqController");
 require("dotenv").config();
 
-router.delete("/delete", deleteFaqById);
-router.get("/", getAllFAQ);
+router.delete("/:id", faqController.delete);
+router.get("/", faqController.getAll);
+router.post("/", faqController.add);
 
 module.exports = router;

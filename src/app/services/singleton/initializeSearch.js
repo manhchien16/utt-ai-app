@@ -3,6 +3,7 @@ const faiss = require("faiss-node");
 const mammoth = require("mammoth");
 require("dotenv").config();
 const path = require("path");
+const fs = require("fs");
 const { DOC_PATH } = require("../../../common/constanCommon");
 const { splitTextIntoChunks } = require("../../../common/functionCommon");
 
@@ -25,22 +26,55 @@ const loadPipeline = async () => {
 const initializeSearchDoc = async () => {
   try {
     encoder = await loadPipeline();
+    console.log("✅ SBERT model loaded!");
     const docPath = path.resolve(__dirname, DOC_PATH);
-    const { value: dataDoc } = await mammoth.extractRawText({ path: docPath });
-    chuck = splitTextIntoChunks(dataDoc.toLowerCase());
+    const docFiles = fs
+      .readdirSync(docPath)
+      .filter((file) => file.endsWith(".docx"));
+
+    if (docFiles.length === 0) {
+      throw new Error("docx not already!");
+    }
+
+    let allText = "";
+    for (const file of docFiles) {
+      const filePath = path.join(docPath, file);
+      const { value: text } = await mammoth.extractRawText({ path: filePath });
+      allText += text.toLowerCase() + "\n";
+    }
+
+    chuck = splitTextIntoChunks(allText);
     const docEmbedings = await encoder(chuck, { pooling: "mean" });
     faissIndexDoc = new faiss.IndexFlatL2(docEmbedings.dims[1]);
     faissIndexDoc.add(Array.from(docEmbedings.data));
+
+    console.log(
+      "✅ Thêm docs embeddings vào FAISS thành công!",
+      faissIndexDoc.ntotal()
+    );
   } catch (error) {
-    throw new Error(error.message);
+    console.log(error);
   }
 };
+
+// const initializeSearchDoc = async () => {
+//   try {
+//     encoder = await loadPipeline();
+//     const docPath = path.resolve(__dirname, DOC_PATH);
+//     const { value: dataDoc } = await mammoth.extractRawText({ path: docPath });
+//     chuck = splitTextIntoChunks(dataDoc.toLowerCase());
+//     const docEmbedings = await encoder(chuck, { pooling: "mean" });
+//     faissIndexDoc = new faiss.IndexFlatL2(docEmbedings.dims[1]);
+//     faissIndexDoc.add(Array.from(docEmbedings.data));
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
 
 const initializeSearch = async () => {
   try {
     // Load model SBERT
     if (!encoder) throw new Error("🚨 Lỗi tải mô hình SBERT.");
-    console.log("✅ SBERT model loaded!");
     // get data FAQ từ MongoDB
     const faqData = await faqCollection.find({}, "-_id");
     // query FAQ
