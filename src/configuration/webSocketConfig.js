@@ -1,5 +1,6 @@
 const WebSocket = require("ws");
 
+const PORT = process.env.SOCKET_PORT;
 const setupWebSocket = (server) => {
   const wss = new WebSocket.Server({ server });
 
@@ -16,7 +17,7 @@ const setupWebSocket = (server) => {
     });
   });
 
-  server.listen(8081, () => {
+  server.listen(PORT, () => {
     console.log("Server socket running on port 8081");
   });
 
