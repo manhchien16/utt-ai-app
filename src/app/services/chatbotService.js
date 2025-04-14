@@ -141,7 +141,7 @@ const generateNewQuery = async (userQuery, data) => {
         {
           role: "system",
           content:
-            "Bạn là một trợ lý lọc và hoàn thiện câu hỏi người dùng hữu ích, hãy để ý các trường hợp người dùng nhập không dấu, bám sát nghĩa của câu nhé, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
+            "Bạn là một trợ lý lọc và hoàn thiện câu hỏi người dùng hữu ích, hãy để ý các trường hợp người dùng nhập không dấu, bám sát nghĩa của câu xác định đúng câu hỏi với độ phù hợp ngữ nghĩa lớn, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
         },
         { role: "user", content: prompt },
       ],
