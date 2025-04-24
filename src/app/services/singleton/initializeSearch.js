@@ -20,19 +20,18 @@ const loadPipeline = async () => {
     "feature-extraction",
     "Xenova/all-mpnet-base-v2"
   );
-  return model;
+  encoder = model;
+  console.log("✅ SBERT model loaded!");
 };
 
 const initializeSearchDoc = async () => {
   try {
-    encoder = await loadPipeline();
-    console.log("✅ SBERT model loaded!");
     const docPath = path.resolve(__dirname, DOC_PATH);
     const docFiles = fs
       .readdirSync(docPath)
       .filter((file) => file.endsWith(".docx"));
 
-    if (docFiles.length === 0) {
+    if (docFiles?.length === 0) {
       throw new Error("docx not already!");
     }
 
@@ -57,26 +56,15 @@ const initializeSearchDoc = async () => {
   }
 };
 
-// const initializeSearchDoc = async () => {
-//   try {
-//     encoder = await loadPipeline();
-//     const docPath = path.resolve(__dirname, DOC_PATH);
-//     const { value: dataDoc } = await mammoth.extractRawText({ path: docPath });
-//     chuck = splitTextIntoChunks(dataDoc.toLowerCase());
-//     const docEmbedings = await encoder(chuck, { pooling: "mean" });
-//     faissIndexDoc = new faiss.IndexFlatL2(docEmbedings.dims[1]);
-//     faissIndexDoc.add(Array.from(docEmbedings.data));
-//   } catch (error) {
-//     throw new Error(error.message);
-//   }
-// };
-
 const initializeSearch = async () => {
   try {
     // Load model SBERT
     if (!encoder) throw new Error("🚨 Lỗi tải mô hình SBERT.");
     // get data FAQ từ MongoDB
     const faqData = await faqCollection.find({}, "-_id");
+
+    if (!faqData || faqData.length === 0)
+      return { encoder, faissIndex, faqEmbeddings };
     // query FAQ
     const faqQuestions = faqData.map((item) => item.Question);
     faqEmbeddings = await Promise.all(
@@ -85,7 +73,7 @@ const initializeSearch = async () => {
         return embedding.tolist()[0];
       })
     );
-    const dim = faqEmbeddings[0].length;
+    const dim = faqEmbeddings[0].length || 0;
     const flatEmbeddings = Array.from(new Float32Array(faqEmbeddings.flat()));
     // Create FAISS Index
     faissIndex = new faiss.IndexFlatL2(dim);
@@ -108,4 +96,9 @@ const getSearchData = () => {
   return { encoder, faissIndex, faqEmbeddings, faissIndexDoc, chuck };
 };
 
-module.exports = { initializeSearch, getSearchData, initializeSearchDoc };
+module.exports = {
+  initializeSearch,
+  getSearchData,
+  initializeSearchDoc,
+  loadPipeline,
+};

@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const {
   initializeSearch,
   initializeSearchDoc,
+  loadPipeline,
 } = require("./services/singleton/initializeSearch");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -11,6 +12,7 @@ const setupWebSocket = require("./services/websocket");
 const http = require("http");
 const { routers } = require("../router");
 const { corsOptions } = require("../configuration/corsConfig");
+const { connectDB } = require("../configuration/dbConfig");
 
 const app = express();
 const server = http.createServer(app);
@@ -40,6 +42,8 @@ setupWebSocket(server);
 // config start server
 const startServer = async () => {
   try {
+    await connectDB();
+    await loadPipeline();
     await initializeSearchDoc();
     await initializeSearch();
     app.listen(PORT, () => {

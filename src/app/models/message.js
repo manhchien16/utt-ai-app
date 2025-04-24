@@ -1,4 +1,4 @@
-const mongoose = require("../../configuration/dbConfig");
+const { mongoose } = require("../../configuration/dbConfig");
 
 const messageSchema = new mongoose.Schema(
   {
