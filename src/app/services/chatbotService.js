@@ -74,7 +74,6 @@ const searchInDocument = async (userQuery, UserIp) => {
     // .filter((word) => !STOP_WORDS.has(word.toLowerCase()))
     // .join(" ");
 
-    console.log(filteredText);
     const filterDoc = chuck.filter((doc) => doc.includes(filteredText));
 
     const extractContext = (doc, matchText, windowSize = 150) => {
@@ -115,7 +114,7 @@ const searchInDocument = async (userQuery, UserIp) => {
     }
     return generateGpt4Response(userQuery, result, UserIp);
   } catch (error) {
-    console.log(error);
+    throw new Error(error);
   }
 };
 // Find by keyword
@@ -133,7 +132,27 @@ const generateNewQuery = async (userQuery, data) => {
 
     const convertMatch = data.map((item) => item.match).join(". ") + "...";
 
-    const prompt = `Thông tin tham khảo: ${convertMatch} \nMột người có câu hỏi "${userQuery}":\nDựa trên các câu hỏi được cung cấp ở "Thông tin tham khảo", hãy cung cấp cho tôi câu hỏi có trong Thông tin tham khảo có ý nghĩa giống với câu hỏi của người dùng nhất.`;
+    const prompt = `
+    Bạn là một hệ thống lọc câu hỏi bằng tiếng Việt. Dưới đây là danh sách câu hỏi có sẵn (gọi là "Ngân hàng câu hỏi") và một câu hỏi của người dùng. Hãy xác định câu hỏi trong Ngân hàng có ý nghĩa **tương đồng nhất về nội dung và mục đích hỏi**, không đơn thuần chỉ giống từ khóa.
+    Lưu ý cực kỳ quan trọng:
+    - Chỉ được chọn câu có **ý nghĩa thực sự gần với câu người dùng**, không phải chỉ chứa từ giống.
+    - Phân biệt các ý như "có xét tuyển học bạ" (trả lời Có/Không) với "điều kiện xét tuyển học bạ" (hỏi về tiêu chí, điểm, hồ sơ...).
+    - Nếu không có câu nào đủ gần nghĩa (trên 90% nội dung), hãy trả về đúng từ: Null.
+    
+    Ví dụ:
+    Ngân hàng câu hỏi:
+    "Trường có xét học bạ không?", "Điều kiện học bổng là gì?", "Địa điểm nhập học ở đâu?"
+    Người dùng hỏi:
+    "Xét học bạ cần những gì?"
+    → Trả lời: Null (vì không có câu nào nói rõ về điều kiện học bạ)   
+    Ngân hàng câu hỏi:
+    ${convertMatch}
+    
+    Câu hỏi người dùng:
+    "${userQuery}"
+    
+    Hãy trả về duy nhất một câu trong Ngân hàng (nếu gần nghĩa), hoặc trả về: Null
+    `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -141,11 +160,13 @@ const generateNewQuery = async (userQuery, data) => {
         {
           role: "system",
           content:
-            "Bạn là một trợ lý lọc và hoàn thiện câu hỏi người dùng hữu ích: hãy bám sát nghĩa của câu xác định đúng câu hỏi với độ phù hợp ngữ nghĩa lớn khoảng 90%, để ý các trường hợp người dùng nhập không dấu, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?, nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
+            "Bạn là một trợ lý lọc câu hỏi người dùng hữu ích: hãy bám sát nghĩa của câu xác định đúng câu hỏi với độ phù hợp ngữ nghĩa lớn khoảng 90%," +
+            "để ý các trường hợp người dùng nhập không dấu, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?," +
+            "nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
         },
         { role: "user", content: prompt },
       ],
-      temperature: 0.3,
+      temperature: 0.1,
       max_tokens: 500,
     });
     return response.choices[0].message.content;
@@ -168,8 +189,6 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
     const contextInfo = `đây là bộ dữ liệu cung cấp: ${data}`;
 
     const prompt = `Một sinh viên hỏi: ${userQuery}\n\nHãy dùng thông tin tìm được trong dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, xuống dòng không bị tạo khoảng trắng, ngắn gọn và thân thiện.${contextInfo}`;
-
-    console.log(prompt);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -259,7 +278,6 @@ const handleUserQuery = async (userQuery, userIP) => {
     if (bestMatch.score > 0.95) {
       response = generateBestMatch(userQuery, bestMatch.match, userIP);
     } else {
-      console.log("topMatch2", topMatch);
       const newQuery = await generateNewQuery(userQuery, topMatch);
       // const newQuery = "Null";
       topMatch = await findBestMatch(newQuery);
