@@ -46,6 +46,8 @@ const findBestMatch = async (userQuery) => {
       }))
       .sort((a, b) => b.score - a.score);
 
+    // console.log(topMatch);
+
     return topMatch.slice(0, Math.min(6, topMatch.length));
   } catch (error) {
     throw new Error(error.message);
@@ -141,8 +143,12 @@ const generateNewQuery = async (userQuery, data) => {
     
     Ví dụ:
     Ngân hàng câu hỏi:
-    "Trường có xét học bạ không?", "Điều kiện học bổng là gì?", "Địa điểm nhập học ở đâu?"
-    Người dùng hỏi:
+    "Trường có xét học bạ không?", "Điều kiện học bổng là gì?", "Điểm chuẩn xét học bạ ngành Hệ thống thông tin năm 2023 là bao nhiêu ?"
+      Người dùng hỏi:
+    "điểm chuẩn ngành hệ thống thông tin năm 2023"
+    → Trả lời: Điểm chuẩn xét học bạ ngành Hệ thống thông tin năm 2023 là bao nhiêu ?
+    
+    Hoặc người dùng hỏi:
     "Xét học bạ cần những gì?"
     → Trả lời: Null (vì không có câu nào nói rõ về điều kiện học bạ)   
     Ngân hàng câu hỏi:
@@ -161,7 +167,7 @@ const generateNewQuery = async (userQuery, data) => {
           role: "system",
           content:
             "Bạn là một trợ lý lọc câu hỏi người dùng hữu ích: hãy bám sát nghĩa của câu xác định đúng câu hỏi với độ phù hợp ngữ nghĩa lớn khoảng 90%," +
-            "để ý các trường hợp người dùng nhập không dấu, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?," +
+            "để ý các trường hợp người dùng nhập không dấu, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?" +
             "nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
         },
         { role: "user", content: prompt },
@@ -169,6 +175,9 @@ const generateNewQuery = async (userQuery, data) => {
       temperature: 0.1,
       max_tokens: 500,
     });
+
+    // console.log(response.choices[0].message.content);
+
     return response.choices[0].message.content;
   } catch (error) {
     throw new Error(error.message);
@@ -187,6 +196,8 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
     }
 
     const contextInfo = `đây là bộ dữ liệu cung cấp: ${data}`;
+
+    // console.log(data);
 
     const prompt = `Một sinh viên hỏi: ${userQuery}\n\nHãy dùng thông tin tìm được trong dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, xuống dòng không bị tạo khoảng trắng, ngắn gọn và thân thiện.${contextInfo}`;
 

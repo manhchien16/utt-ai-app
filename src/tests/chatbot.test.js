@@ -1668,8 +1668,8 @@ questions.map((item) =>
     it("should return chatbot response and log results", async () => {
       jest.setTimeout(10000);
       const inputData = {
-        userQuery: item.Question,
-        answer: item.Answer ? item.Answer : "N/A",
+        Question: item.Question,
+        Answer: item.Answer ? item.Answer : "N/A",
       };
 
       const response = await request("http://localhost:8080")
