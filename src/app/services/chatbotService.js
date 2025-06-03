@@ -114,6 +114,9 @@ const searchInDocument = async (userQuery, UserIp) => {
     } else {
       result = convertExtractedTexts + "," + resultFindByFaiss;
     }
+
+    // console.log("doc================", result);
+
     return generateGpt4Response(userQuery, result, UserIp);
   } catch (error) {
     throw new Error(error);
@@ -157,8 +160,7 @@ const generateNewQuery = async (userQuery, data) => {
     Câu hỏi người dùng:
     "${userQuery}"
     
-    Hãy trả về duy nhất một câu trong Ngân hàng (nếu gần nghĩa), hoặc trả về: Null
-    `;
+    Hãy trả về duy nhất một câu trong Ngân hàng (nếu gần nghĩa), hoặc trả về: Null`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -166,14 +168,14 @@ const generateNewQuery = async (userQuery, data) => {
         {
           role: "system",
           content:
-            "Bạn là một trợ lý lọc câu hỏi người dùng hữu ích: hãy bám sát nghĩa của câu xác định đúng câu hỏi với độ phù hợp ngữ nghĩa lớn khoảng 90%," +
-            "để ý các trường hợp người dùng nhập không dấu, nếu người dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?" +
+            "Bạn là một trợ lý lọc câu hỏi người dùng hữu ích: hãy bám sát nghĩa của câu xác định đúng câu hỏi với độ phù hợp ngữ nghĩa lớn khoảng 85%," +
+            "để ý các trường hợp người dùng nhập không dấu, nếu ng ười dùng hỏi hãy chỉ trả về câu trả với có cấu trúc như ví dụ ví dụ: Địa chỉ các trụ sở?" +
             "nếu không có câu trả lời nào phù hợp thì chỉ trả về 1 chữ: Null",
         },
         { role: "user", content: prompt },
       ],
-      temperature: 0.1,
-      max_tokens: 500,
+      temperature: 0.3,
+      max_tokens: 600,
     });
 
     // console.log(response.choices[0].message.content);
@@ -285,6 +287,8 @@ const handleUserQuery = async (userQuery, userIP) => {
     let topMatch = await findBestMatch(userQuery);
     let response;
     let bestMatch = topMatch[0];
+
+    console.log("================", topMatch);
 
     if (bestMatch.score > 0.95) {
       response = generateBestMatch(userQuery, bestMatch.match, userIP);
