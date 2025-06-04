@@ -54,9 +54,34 @@ const findBestMatch = async (userQuery) => {
   }
 };
 
+function formatFaqPairs(faqArray) {
+  return faqArray
+    .map((item, index) => {
+      return `Question ${index + 1}: ${item.Question} Answer ${index + 1}: ${
+        item.Answer
+      }`;
+    })
+    .join("; ");
+}
+
 // Search in document
-const searchInDocument = async (userQuery, UserIp) => {
+const searchInDocument = async (userQuery, topMatch, UserIp) => {
   try {
+    let matchContext;
+    if (topMatch) {
+      const matchQuestions = topMatch.map((item) => item.match);
+
+      const responseFaq = await faqCollection.find(
+        {
+          Question: { $in: matchQuestions },
+        },
+        { CreatedAt: 0, LastedUpdate: 0, _id: 0 }
+      );
+
+      matchContext = formatFaqPairs(responseFaq);
+
+      // console.log("========", matchContext);
+    }
     const { encoder, faissIndexDoc, chuck } = getSearchData();
     if (
       !areObjectValid(["userQuery"], { userQuery }) ||
@@ -72,9 +97,6 @@ const searchInDocument = async (userQuery, UserIp) => {
     const { labels } = faissIndexDoc.search(Array.from(queryEmbedding.data), 1);
 
     const filteredText = convertQuery[0].toLowerCase();
-    // .split(" ")
-    // .filter((word) => !STOP_WORDS.has(word.toLowerCase()))
-    // .join(" ");
 
     const filterDoc = chuck.filter((doc) => doc.includes(filteredText));
 
@@ -117,7 +139,7 @@ const searchInDocument = async (userQuery, UserIp) => {
 
     // console.log("doc================", result);
 
-    return generateGpt4Response(userQuery, result, UserIp);
+    return generateGpt4Response(userQuery, result, matchContext, UserIp);
   } catch (error) {
     throw new Error(error);
   }
@@ -187,7 +209,7 @@ const generateNewQuery = async (userQuery, data) => {
 };
 
 // Search in GPT-4
-const generateGpt4Response = async (userQuery, data, userIP) => {
+const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
   try {
     const isValid = areObjectValid(["userQuery", "userIP"], {
       userQuery,
@@ -197,7 +219,7 @@ const generateGpt4Response = async (userQuery, data, userIP) => {
       throw new Error("Data is invalid");
     }
 
-    const contextInfo = `đây là bộ dữ liệu cung cấp: ${data}`;
+    const contextInfo = `đây là bộ dữ liệu cung cấp: ${data} \n đây là dữ liệu câu hỏi và câu trả lời ${matchContext}`;
 
     // console.log(data);
 
@@ -288,23 +310,21 @@ const handleUserQuery = async (userQuery, userIP) => {
     let response;
     let bestMatch = topMatch[0];
 
-    console.log("================", topMatch);
+    // console.log("================", topMatch);
 
     if (bestMatch.score > 0.95) {
       response = generateBestMatch(userQuery, bestMatch.match, userIP);
     } else {
       const newQuery = await generateNewQuery(userQuery, topMatch);
-      // const newQuery = "Null";
-      topMatch = await findBestMatch(newQuery);
-
-      bestMatch = topMatch.reduce(
+      const newTopMatch = await findBestMatch(newQuery);
+      bestMatch = newTopMatch.reduce(
         (max, item) => (item.score > max.score ? item : max),
         { match: "", score: -Infinity }
       );
       if (bestMatch.score > 0.95) {
         response = generateBestMatch(userQuery, bestMatch.match, userIP);
       } else {
-        response = searchInDocument(userQuery, userIP);
+        response = searchInDocument(userQuery, topMatch, userIP);
       }
     }
     return response;
