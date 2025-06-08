@@ -38,7 +38,7 @@ app.use(
 app.use(cors(corsOptions));
 
 // setup socket
-setupWebSocket(server);
+// setupWebSocket(server);
 // config start server
 const startServer = async () => {
   try {
