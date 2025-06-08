@@ -158,31 +158,32 @@ const generateNewQuery = async (userQuery, data) => {
     }
 
     const convertMatch = data.map((item) => item.match).join(". ") + "...";
+    const prompt = `Ngân hàng câu hỏi: ${convertMatch} \nMột người có câu hỏi "${userQuery}":\nDựa trên các câu hỏi được cung cấp ở "Ngân hàng câu hỏi", hãy cung cấp cho tôi câu hỏi có trong Thông tin tham khảo có ý nghĩa giống với câu hỏi của người dùng nhất.`;
 
-    const prompt = `
-    Bạn là một hệ thống lọc câu hỏi bằng tiếng Việt. Dưới đây là danh sách câu hỏi có sẵn (gọi là "Ngân hàng câu hỏi") và một câu hỏi của người dùng. Hãy xác định câu hỏi trong Ngân hàng có ý nghĩa **tương đồng nhất về nội dung và mục đích hỏi**, không đơn thuần chỉ giống từ khóa.
-    Lưu ý cực kỳ quan trọng:
-    - Chỉ được chọn câu có **ý nghĩa thực sự gần với câu người dùng**, không phải chỉ chứa từ giống.
-    - Phân biệt các ý như "có xét tuyển học bạ" (trả lời Có/Không) với "điều kiện xét tuyển học bạ" (hỏi về tiêu chí, điểm, hồ sơ...).
-    - Nếu không có câu nào đủ gần nghĩa (trên 90% nội dung), hãy trả về đúng từ: Null.
-    
-    Ví dụ:
-    Ngân hàng câu hỏi:
-    "Trường có xét học bạ không?", "Điều kiện học bổng là gì?", "Điểm chuẩn xét học bạ ngành Hệ thống thông tin năm 2023 là bao nhiêu ?"
-      Người dùng hỏi:
-    "điểm chuẩn ngành hệ thống thông tin năm 2023"
-    → Trả lời: Điểm chuẩn xét học bạ ngành Hệ thống thông tin năm 2023 là bao nhiêu ?
-    
-    Hoặc người dùng hỏi:
-    "Xét học bạ cần những gì?"
-    → Trả lời: Null (vì không có câu nào nói rõ về điều kiện học bạ)   
-    Ngân hàng câu hỏi:
-    ${convertMatch}
-    
-    Câu hỏi người dùng:
-    "${userQuery}"
-    
-    Hãy trả về duy nhất một câu trong Ngân hàng (nếu gần nghĩa), hoặc trả về: Null`;
+    // const prompt = `
+    // Bạn là một hệ thống lọc câu hỏi bằng tiếng Việt. Dưới đây là danh sách câu hỏi có sẵn (gọi là "Ngân hàng câu hỏi") và một câu hỏi của người dùng. Hãy xác định câu hỏi trong Ngân hàng có ý nghĩa **tương đồng nhất về nội dung và mục đích hỏi**, không đơn thuần chỉ giống từ khóa.
+    // Lưu ý cực kỳ quan trọng:
+    // - Chỉ được chọn câu có **ý nghĩa thực sự gần với câu người dùng**, không phải chỉ chứa từ giống.
+    // - Phân biệt các ý như "có xét tuyển học bạ" (trả lời Có/Không) với "điều kiện xét tuyển học bạ" (hỏi về tiêu chí, điểm, hồ sơ...).
+    // - Nếu không có câu nào đủ gần nghĩa (trên 90% nội dung), hãy trả về đúng từ: Null.
+
+    // Ví dụ:
+    // Ngân hàng câu hỏi:
+    // "Trường có xét học bạ không?", "Điều kiện học bổng là gì?", "Điểm chuẩn xét học bạ ngành Hệ thống thông tin năm 2023 là bao nhiêu ?"
+    //   Người dùng hỏi:
+    // "điểm chuẩn ngành hệ thống thông tin năm 2023"
+    // → Trả lời: Điểm chuẩn xét học bạ ngành Hệ thống thông tin năm 2023 là bao nhiêu ?
+
+    // Hoặc người dùng hỏi:
+    // "Xét học bạ cần những gì?"
+    // → Trả lời: Null (vì không có câu nào nói rõ về điều kiện học bạ)
+    // Ngân hàng câu hỏi:
+    // ${convertMatch}
+
+    // Câu hỏi người dùng:
+    // "${userQuery}"
+
+    // Hãy trả về duy nhất một câu trong Ngân hàng (nếu gần nghĩa), hoặc trả về: Null`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -211,6 +212,10 @@ const generateNewQuery = async (userQuery, data) => {
 // Search in GPT-4
 const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
   try {
+    // console.log(userQuery);
+    // console.log("=====1", data);
+    // console.log("=====2", matchContext);
+    // console.log("=====3", userIP);
     const isValid = areObjectValid(["userQuery", "userIP"], {
       userQuery,
       userIP,
