@@ -48,7 +48,7 @@ const findBestMatch = async (userQuery) => {
 
     // console.log(topMatch);
 
-    return topMatch.slice(0, Math.min(6, topMatch.length));
+    return topMatch.slice(0, Math.min(15, topMatch.length));
   } catch (error) {
     throw new Error(error.message);
   }
@@ -231,7 +231,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
       user_ip: userIP,
       timestamp: new Date(),
       user_message: userQuery,
-      bot_response: `${response.choices[0].message.content} \n\n**Tôi là một trợ lý Ai nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực tiếp vào https://utt.edu.vn/ để biết thêm!**`,
+      bot_response: `${response.choices[0].message.content} \n\n**Tôi là một trợ lý AI nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực tiếp vào https://utt.edu.vn/ để biết thêm!**`,
     };
     const responseGPT = await saveChatLog(newData);
     return {
@@ -297,23 +297,25 @@ const handleUserQuery = async (userQuery, userIP) => {
     let topMatch = await findBestMatch(userQuery);
     let response;
     let bestMatch = topMatch[0];
+    // console.log("match", topMatch);
 
     // console.log("================", topMatch);
 
     if (bestMatch.score > 0.95) {
       response = generateBestMatch(userQuery, bestMatch.match, userIP);
     } else {
-      const newQuery = await generateNewQuery(userQuery, topMatch);
-      const newTopMatch = await findBestMatch(newQuery);
-      bestMatch = newTopMatch.reduce(
-        (max, item) => (item.score > max.score ? item : max),
-        { match: "", score: -Infinity }
-      );
-      if (bestMatch.score > 0.95) {
-        response = generateBestMatch(userQuery, bestMatch.match, userIP);
-      } else {
-        response = searchInDocument(userQuery, topMatch, userIP);
-      }
+      // const newQuery = await generateNewQuery(userQuery, topMatch);
+      // const newTopMatch = await findBestMatch(newQuery);
+      // bestMatch = newTopMatch.reduce(
+      //   (max, item) => (item.score > max.score ? item : max),
+      //   { match: "", score: -Infinity }
+      // );
+      // if (bestMatch.score > 0.95) {
+      //   response = generateBestMatch(userQuery, bestMatch.match, userIP);
+      // }
+      // else {
+      response = searchInDocument(userQuery, topMatch, userIP);
+      // }
     }
     return response;
   } catch (error) {
