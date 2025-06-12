@@ -223,7 +223,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
         },
         { role: "user", content: prompt },
       ],
-      temperature: 0.3,
+      temperature: 0.7,
       max_tokens: 3500,
     });
 
