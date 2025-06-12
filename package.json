@@ -4,6 +4,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "node --watch ./src/app/app",
+    "start": "node ./src/app/app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
