@@ -223,7 +223,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
         },
         { role: "user", content: prompt },
       ],
-      temperature: 0.7,
+      // temperature: 0.7,
       max_tokens: 3500,
     });
 
@@ -231,7 +231,8 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
       user_ip: userIP,
       timestamp: new Date(),
       user_message: userQuery,
-      bot_response: `${response.choices[0].message.content} \n\n**Tôi là một trợ lý AI nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực tiếp vào https://utt.edu.vn/ để biết thêm!**`,
+      bot_response: `${response.choices[0].message.content}`,
+      // \n\n**Tôi là một trợ lý AI nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực tiếp vào https://utt.edu.vn/ để biết thêm!**`,
     };
     const responseGPT = await saveChatLog(newData);
     return {
