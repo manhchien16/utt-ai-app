@@ -214,7 +214,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
     const prompt = `Một sinh viên hỏi: ${userQuery}\n\nHãy dùng thông tin tìm được trong dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, xuống dòng không bị tạo khoảng trắng, ngắn gọn và thân thiện.${contextInfo}`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
