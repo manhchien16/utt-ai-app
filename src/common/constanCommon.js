@@ -115,4 +115,7 @@ const STOP_WORDS = new Set([]);
 // const DOC_PATH = "../../../docs/ttc_ts25.docx";
 const DOC_PATH = "../../../docs";
 
-module.exports = { QUERY_KEYWORD, DOC_PATH, STOP_WORDS };
+const WARNING =
+  "Xin lỗi, mình chưa kịp hiểu ý. Bạn có thể viết lại thật rõ ràng, tiếng Việt có dấu giúp mình nhé?";
+
+module.exports = { QUERY_KEYWORD, DOC_PATH, STOP_WORDS, WARNING };

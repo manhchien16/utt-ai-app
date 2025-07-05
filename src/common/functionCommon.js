@@ -1,4 +1,5 @@
 const { QUERY_KEYWORD } = require("./constanCommon");
+const XRegExp = require("xregexp");
 
 const areObjectValid = (keys, queryParams) => {
   return keys.every((key) => {
@@ -38,9 +39,51 @@ const pagination = (page, pageSize, totalItem) => {
   };
 };
 
+const SAFE_REGEX = XRegExp("^[\\p{L}\\p{N}\\s.,!?\"'“”‘’\\-–—()\\[\\]{}:;]*$");
+
+function shannonEntropy(s) {
+  const counts = {};
+  for (const char of s) {
+    counts[char] = (counts[char] || 0) + 1;
+  }
+  const len = s.length;
+  let entropy = 0;
+  for (const count of Object.values(counts)) {
+    const p = count / len;
+    entropy -= p * Math.log2(p);
+  }
+  return entropy;
+}
+
+function symbolRatio(s) {
+  if (s.length === 0) return 0;
+  let unsafeCount = 0;
+  for (const ch of s) {
+    if (!SAFE_REGEX.test(ch)) {
+      unsafeCount++;
+    }
+  }
+  return unsafeCount / s.length;
+}
+
+function looksGibberish(s, H_thresh = 4.8, sym_thresh = 0.3) {
+  const entropy = shannonEntropy(s);
+  const ratio = symbolRatio(s);
+  // console.log(
+  //   `[debug] entropy=${entropy.toFixed(2)} ratio=${ratio.toFixed(2)}`
+  // );
+  return entropy > H_thresh || ratio > sym_thresh;
+}
+
+function isValidData(text, minLen = 2) {
+  if (!text || text.trim().length < minLen) return false;
+  return !looksGibberish(text);
+}
+
 module.exports = {
   areObjectValid,
   cosineSimilarity,
   splitTextIntoChunks,
   pagination,
+  isValidData,
 };
