@@ -197,33 +197,41 @@ const generateNewQuery = async (userQuery, data) => {
 // Search in GPT-4
 const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
   try {
-    // console.log(userQuery);
     // console.log("=====1", data);
     // console.log("=====2", matchContext);
-    // console.log("=====3", userIP);
-    const isValid = areObjectValid(["userQuery", "userIP"], {
-      userQuery,
-      userIP,
-    });
+
+    const isValid = areObjectValid(["userQuery", "userIP"], { userQuery, userIP });
     if (!isValid || !data) {
       throw new Error("Data is invalid");
     }
 
-    const contextInfo = `đây là bộ dữ liệu cung cấp: ${data} \n đây là dữ liệu câu hỏi và câu trả lời ${matchContext}`;
+    // === Ước lượng số token ===
+    const estimateTokenCount = (text) => Math.ceil(text.split(/\s+/).length * 1.5); // heuristic: 1 word ≈ 1.5 token
+    const maxTokenLimit = 7000;
+    let adjustedContext = matchContext;
 
-    // console.log(data);
+    if (estimateTokenCount(adjustedContext) > maxTokenLimit) {
+      const words = adjustedContext.split(/\s+/);
+      adjustedContext = words.slice(0, maxTokenLimit).join(" ");
+    }
 
-    const prompt = `Một sinh viên hỏi: ${userQuery}\n\nHãy dùng thông tin tìm được trong dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, xuống dòng không bị tạo khoảng trắng, ngắn gọn và thân thiện.${contextInfo}`;
+    const prompt =
+      `Một sinh viên hỏi: ${userQuery}\n\n` +
+      `Dựa trên thông tin sau đây, hãy cung cấp một câu trả lời hữu ích, ngắn gọn và thân thiện. ` +
+      `Dẫn nguồn từ nội dung có sẵn nếu cần.\n\n` +
+      `Ngữ cảnh từ tài liệu:\n${adjustedContext}`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content:
-            "Bạn là một trợ lý tuyển sinh trường đại học Công Nghệ Giao Thông Vận Tải (UTT) hữu ích",
+          content: "Bạn là một trợ lý tuyển sinh đại học hữu ích, chỉ dựa trên nội dung đã cung cấp.",
         },
-        { role: "user", content: prompt },
+        {
+          role: "user",
+          content: prompt,
+        },
       ],
       temperature: 0.7,
       max_tokens: 3500,
@@ -233,9 +241,9 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
       user_ip: userIP,
       timestamp: new Date(),
       user_message: userQuery,
-      bot_response: `${response.choices[0].message.content}`,
-      // \n\n**Tôi là một trợ lý AI nên câu trả lời có thể chưa đầy đủ bạn có thể truy cập trực tiếp vào https://utt.edu.vn/ để biết thêm!**`,
+      bot_response: response.choices[0].message.content,
     };
+
     const responseGPT = await saveChatLog(newData);
     return {
       ...responseGPT._doc,
@@ -245,6 +253,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
     throw new Error(error.message);
   }
 };
+
 
 // Save chat log
 const saveChatLog = async (data) => {
