@@ -1,6 +1,7 @@
 const {
   areObjectValid,
   cosineSimilarity,
+  isValidData,
 } = require("../../common/functionCommon");
 const faqCollection = require("../models/faqtuyensinh");
 const chatlogCollection = require("../models/chatlog");
@@ -10,7 +11,8 @@ const fs = require("fs-extra");
 require("dotenv").config();
 
 const { getSearchData } = require("./singleton/initializeSearch");
-const { STOP_WORDS } = require("../../common/constanCommon");
+const { STOP_WORDS, WARNING } = require("../../common/constanCommon");
+const { handleAdmissionQuery } = require("../../common/handleAdmissionQuery");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -214,7 +216,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
     const prompt = `Một sinh viên hỏi: ${userQuery}\n\nHãy dùng thông tin tìm được trong dữ liệu đã được cung cấp, hãy cung cấp một câu trả lời hữu ích, xuống dòng không bị tạo khoảng trắng, ngắn gọn và thân thiện.${contextInfo}`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -223,7 +225,7 @@ const generateGpt4Response = async (userQuery, data, matchContext, userIP) => {
         },
         { role: "user", content: prompt },
       ],
-      // temperature: 0.7,
+      temperature: 0.7,
       max_tokens: 3500,
     });
 
@@ -294,31 +296,37 @@ const generateBestMatch = async (userQuery, question, userIP) => {
 // Handle user query
 const handleUserQuery = async (userQuery, userIP) => {
   try {
-    if (!userQuery) throw new Error("Data is invalid");
-    let topMatch = await findBestMatch(userQuery);
-    let response;
-    let bestMatch = topMatch[0];
-    // console.log("match", topMatch);
-
-    // console.log("================", topMatch);
-
-    if (bestMatch.score > 0.95) {
-      response = generateBestMatch(userQuery, bestMatch.match, userIP);
-    } else {
-      // const newQuery = await generateNewQuery(userQuery, topMatch);
-      // const newTopMatch = await findBestMatch(newQuery);
-      // bestMatch = newTopMatch.reduce(
-      //   (max, item) => (item.score > max.score ? item : max),
-      //   { match: "", score: -Infinity }
-      // );
-      // if (bestMatch.score > 0.95) {
-      //   response = generateBestMatch(userQuery, bestMatch.match, userIP);
-      // }
-      // else {
-      response = searchInDocument(userQuery, topMatch, userIP);
-      // }
+    if (!isValidData(userQuery)) {
+      throw new Error(WARNING);
     }
-    return response;
+
+    console.log(userQuery);
+    const AnswerFromAdmissionQuery = await handleAdmissionQuery(userQuery);
+
+    if (AnswerFromAdmissionQuery === null) {
+      let topMatch = await findBestMatch(userQuery);
+      let response;
+      let bestMatch = topMatch[0];
+
+      if (bestMatch.score > 0.95) {
+        response = generateBestMatch(userQuery, bestMatch.match, userIP);
+      } else {
+        response = searchInDocument(userQuery, topMatch, userIP);
+      }
+      return response;
+    } else {
+      const dataForSaveChatlog = {
+        user_ip: userIP,
+        timestamp: new Date(),
+        user_message: userQuery,
+        bot_response: AnswerFromAdmissionQuery,
+      };
+      const resChatLog = await saveChatLog(dataForSaveChatlog);
+      return {
+        ...resChatLog._doc,
+        bestQuestion: userQuery,
+      };
+    }
   } catch (error) {
     throw new Error(error.message);
   }
